@@ -1,0 +1,11 @@
+.grid {
+  position: relative;
+}
+
+:global(*) {
+  outline: 1px dashed red !important;
+}
+
+.cell {
+  position: absolute;
+}
