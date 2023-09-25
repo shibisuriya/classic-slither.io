@@ -1,13 +1,7 @@
 import React from "react";
 import styles from "./grid.module.css";
-
-// in px (pixels)
-const GRID_WIDTH = 1500;
-const GRID_HEIGHT = 500;
-const CELL_DIMENSION = 30;
-
-const NUMBER_OF_ROWS = GRID_HEIGHT / CELL_DIMENSION;
-const NUMBER_OF_COLUMNS = GRID_WIDTH / CELL_DIMENSION;
+import { CELL_DIMENSION, NUMBER_OF_COLUMNS, NUMBER_OF_ROWS } from "./constants";
+import { generateKey } from "./utils";
 
 const grid = [];
 for (let i = 0; i < NUMBER_OF_ROWS; i++) {
@@ -18,7 +12,16 @@ for (let i = 0; i < NUMBER_OF_ROWS; i++) {
   grid.push(row);
 }
 
-function Cell({ x, y }) {
+function Cell({ x, y, body, head }) {
+  const cellColor = () => {
+    if (body) {
+      return { backgroundColor: "red" };
+    } else if (head) {
+      return { backgroundColor: "black" };
+    } else {
+      return { backgroundColor: "white" };
+    }
+  };
   return (
     <div
       className={styles.cell}
@@ -27,18 +30,26 @@ function Cell({ x, y }) {
         left: `${y * CELL_DIMENSION}px`,
         height: `${CELL_DIMENSION}px`,
         width: `${CELL_DIMENSION}px`,
+        ...cellColor(),
       }}
     ></div>
   );
 }
 
-function Grid({ snakes }) {
+function Grid({ snake }) {
   return (
     <div className={styles.grid}>
       {grid.map((rows) => {
         return rows.map((col) => {
           const [x, y] = col;
-          return <Cell x={x} y={y} key={`${x}-${y}`} />;
+          const key = generateKey(x, y);
+          if (snake.getHead().key == key) {
+            return <Cell x={x} y={y} key={`${x}-${y}`} head={true} />;
+          } else if (snake.hash[generateKey(x, y)]) {
+            return <Cell x={x} y={y} key={`${x}-${y}`} body={true} />;
+          } else {
+            return <Cell x={x} y={y} key={`${x}-${y}`} />;
+          }
         });
       })}
     </div>
