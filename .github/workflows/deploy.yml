@@ -3,7 +3,7 @@ name: Build and Deploy Docs
 on:
   push:
     branches:
-      - main # Adjust this to the main branch name if it's different
+      - master # Adjust this to the main branch name if it's different
 
 jobs:
   build:
