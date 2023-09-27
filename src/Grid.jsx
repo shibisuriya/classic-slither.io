@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styles from "./grid.module.css";
 import {
   CELL_DIMENSION,
@@ -41,6 +41,11 @@ function Cell({ x, y, body, head }) {
     ></div>
   );
 }
+
+
+// useEffect(() => {
+  
+// },[])
 
 function Grid({ snake }) {
   const makeCell = (cell) => {
