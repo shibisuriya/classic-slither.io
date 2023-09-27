@@ -27,20 +27,63 @@ function App() {
     });
   }
 
+  function getOppDirection(dir) {
+    if (dir == DIRECTION.UP) {
+      return DIRECTION.DOWN;
+    } else if (dir == DIRECTION.DOWN) {
+      return DIRECTION.UP;
+    } else if (dir == DIRECTION.RIGHT) {
+      return DIRECTION.LEFT;
+    } else {
+      return DIRECTION.RIGHT;
+    }
+  }
+
   const up = () => {
-    setCurrentDirection(DIRECTION.UP);
+      setCurrentDirection(prevDirection => {
+        if (getOppDirection(prevDirection) == DIRECTION.UP) {
+          return prevDirection
+        } else {
+          return DIRECTION.UP
+          }
+      }
+        );
   };
 
   const down = () => {
-    setCurrentDirection(DIRECTION.DOWN);
+    if ( getOppDirection() != currentDirection)
+      setCurrentDirection(prevDirection => {
+        if (getOppDirection(prevDirection) == DIRECTION.DOWN) {
+          return prevDirection
+        } else {
+          return DIRECTION.DOWN
+          }
+      }
+        );
   };
 
   const right = () => {
-    setCurrentDirection(DIRECTION.RIGHT);
+    if( getOppDirection() != currentDirection)
+      setCurrentDirection(prevDirection => {
+        if (getOppDirection(prevDirection) == DIRECTION.RIGHT) {
+          return prevDirection
+        } else {
+          return DIRECTION.RIGHT
+          }
+      }
+        );
   };
 
   const left = () => {
-    setCurrentDirection(DIRECTION.LEFT);
+    if( getOppDirection() != currentDirection)
+      setCurrentDirection(prevDirection => {
+        if (getOppDirection(prevDirection) == DIRECTION.LEFT) {
+          return prevDirection
+        } else {
+          return DIRECTION.LEFT
+          }
+      }
+        );
   };
 
   useEffect(() => {
@@ -48,25 +91,26 @@ function App() {
 
     document.addEventListener("keydown", (event) => {
       const key = event.key.toLowerCase();
-      if (["w", "arrowup"].includes(key)) {
+      if (["w", "arrowup"].includes(key) ) {
         up();
-      } else if (["s", "arrowdown"].includes(key)) {
+      } else if (["s", "arrowdown"].includes(key) ) {
         down();
-      } else if (["a", "arrowleft"].includes(key)) {
+      } else if (["a", "arrowleft"].includes(key) ) {
         left();
-      } else if (["d", "arrowright"].includes(key)) {
+      } else if (["d", "arrowright"].includes(key) ) {
         right();
       }
     });
 
     return () => {
+      moveForward()
       clearInterval(timer);
     };
   }, [currentDirection]);
 
   const [snake, setSnake] = useState({ x: 0, y: 0 });
 
-  console.log(snake);
+  // console.log(snake);
 
   return (
     <div>
