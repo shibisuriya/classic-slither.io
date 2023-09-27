@@ -1,1 +1,1 @@
-# Classic Slither.io
+# Classic Slither.io (WIP)

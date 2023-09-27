@@ -2,19 +2,21 @@ import { useState } from "react";
 import { generateKey } from "../utils";
 
 const useOrderedHash = (list = []) => {
-  const hash = {};
   const keys = [];
+  const getHash = () => {
+    return list.reduce((hash, [x, y]) => {
+      const key = generateKey(x, y);
+      if (!keys.includes(key)) {
+        keys.push(key);
+      } else {
+        throw new Error("Error: The key already exists in the 'OrderedHash'.");
+      }
+      hash[key] = [x, y];
+      return hash;
+    }, {});
+  };
 
-  list.forEach(([x, y]) => {
-    const key = generateKey(x, y);
-    if (!keys.includes(key)) {
-      keys.push(key);
-    } else {
-      throw new Error("Error: The key already exists in the 'OrderedHash'.");
-    }
-    hash[key] = [x, y];
-  });
-
+  const [hash, setHash] = useState(getHash());
 
   const getHead = () => {
     const key = keys[0];
@@ -33,6 +35,14 @@ const useOrderedHash = (list = []) => {
   };
 
   const moveForward = () => {
+    setHash((hash) => {
+      const head = keys[0];
+      const tail = keys[keys.length - 1];
+
+      const [headX, headY] = hash[head];
+      const newHead = [headX + 1, headY];
+      return { ...hash, [keys[0]]: newHead };
+    });
     console.log("move forward invoked -> ", Date.now());
   };
 
