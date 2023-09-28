@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import useOrderedHash from './hooks/useOrderedHash';
 import { generateKey } from './utils';
 import Grid from './Grid';
+
+const SPEED = 1 * 100;
 
 const DIRECTION = {
 	UP: 'up',
@@ -17,29 +18,38 @@ function App() {
 		setSnake((prevSnake) => {
 			const updatedHash = { ...prevSnake.hash };
 			const updatedList = [...prevSnake.list];
-			const [head] = updatedList;
+
+			// Remove tail.
 			const tailKey = updatedList.pop(); // mutates.
 			delete updatedHash[tailKey];
-			const { x, y } = updatedHash[head];
 
-			if (currentDirection == DIRECTION.UP) {
-				const newHead = { x: x - 1, y };
-				updatedHash[generateKey(newHead.x, newHead.y)] = newHead;
-				updatedList.unshift(newHead);
-				return { hash: updatedHash, list: updatedList };
-			} else if (currentDirection == DIRECTION.DOWN) {
-				const newHead = { x: x - 1, y };
-				return { hash: updatedHash, list: updatedList };
-			} else if (currentDirection == DIRECTION.LEFT) {
-				const newHead = { x: x - 1, y };
-				return { hash: updatedHash, list: updatedList };
-			} else if (currentDirection == DIRECTION.RIGHT) {
-				const newHead = { x: x, y: y + 1 };
+			// Create new head using prev head.
+			const [headKey] = updatedList;
+			const head = updatedHash[headKey];
+
+			if (currentDirection == DIRECTION.RIGHT) {
+				const newHead = { x: head.x, y: head.y + 1 };
 				const newHeadKey = generateKey(newHead.x, newHead.y);
 				updatedHash[newHeadKey] = newHead;
 				updatedList.unshift(newHeadKey);
-				return { hash: updatedHash, list: updatedList };
+			} else if (currentDirection == DIRECTION.UP) {
+				const newHead = { x: head.x - 1, y: head.y };
+				const newHeadKey = generateKey(newHead.x, newHead.y);
+				updatedHash[newHeadKey] = newHead;
+				updatedList.unshift(newHeadKey);
+			} else if (currentDirection == DIRECTION.DOWN) {
+				const newHead = { x: head.x + 1, y: head.y };
+				const newHeadKey = generateKey(newHead.x, newHead.y);
+				updatedHash[newHeadKey] = newHead;
+				updatedList.unshift(newHeadKey);
+			} else if (currentDirection == DIRECTION.LEFT) {
+				const newHead = { x: head.x, y: head.y - 1 };
+				const newHeadKey = generateKey(newHead.x, newHead.y);
+				updatedHash[newHeadKey] = newHead;
+				updatedList.unshift(newHeadKey);
 			}
+
+			return { hash: updatedHash, list: updatedList };
 		});
 	}
 
@@ -60,7 +70,7 @@ function App() {
 	};
 
 	useEffect(() => {
-		const timer = setInterval(moveForward, 1 * 1000);
+		const timer = setInterval(moveForward, SPEED);
 
 		document.addEventListener('keydown', (event) => {
 			const key = event.key.toLowerCase();
