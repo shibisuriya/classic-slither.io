@@ -1,4 +1,4 @@
-import { NUMBER_OF_COLUMNS, NUMBER_OF_ROWS } from './constants';
+import { NUMBER_OF_COLUMNS, NUMBER_OF_ROWS, DIRECTIONS } from './constants';
 
 export const generateKey = (i, j, columns, rows) => {
 	// TODO: tighten this code.
@@ -6,4 +6,19 @@ export const generateKey = (i, j, columns, rows) => {
 	// 	throw exceptions.invalidCoordinates(i, j);
 	// }
 	return `${i}-${j}`;
+};
+
+export const getOppositeDirection = (direction) => {
+	switch (direction) {
+		case DIRECTIONS.DOWN:
+			return DIRECTIONS.UP;
+		case DIRECTIONS.UP:
+			return DIRECTIONS.DOWN;
+		case DIRECTIONS.LEFT:
+			return DIRECTIONS.RIGHT;
+		case DIRECTIONS.RIGHT:
+			return DIRECTIONS.LEFT;
+		default:
+			throw new Error(`Invalid direction, ${direction}.`);
+	}
 };
