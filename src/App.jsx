@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { generateKey, getOppositeDirection } from './utils';
-import { DIRECTIONS } from './constants';
+import { DIRECTIONS, NUMBER_OF_COLUMNS, NUMBER_OF_ROWS, DEFAULT_DIRECTION } from './constants';
 import Grid from './Grid';
 
 const SPEED = 1 * 100;
 
 function App() {
 	const currentDirection = useRef(DIRECTIONS.RIGHT);
-	const [snake, setSnake] = useState({
-		// snake is based on the ordered hashmap data structure.
+
+	const initialState = {
 		hash: {
 			'0-0': { x: 0, y: 0 },
 			'0-1': { x: 0, y: 1 },
@@ -16,46 +16,53 @@ function App() {
 			'0-3': { x: 0, y: 3 },
 		},
 		list: ['0-3', '0-2', '0-1', '0-0'],
-	});
+	};
+	const [snake, setSnake] = useState(initialState);
+
+	const resetSnake = () => {
+		currentDirection.current = DEFAULT_DIRECTION;
+		setSnake(initialState);
+	};
 
 	function moveForward() {
-		console.log(snake.list[0], ' ', Date.now());
-		setSnake((prevSnake) => {
-			const updatedHash = { ...prevSnake.hash };
-			const updatedList = [...prevSnake.list];
+		const updatedHash = { ...snake.hash };
+		const updatedList = [...snake.list];
 
-			// Remove tail.
-			const tailKey = updatedList.pop(); // mutates.
-			delete updatedHash[tailKey];
+		// Remove tail.
+		const tailKey = updatedList.pop(); // mutates.
+		delete updatedHash[tailKey];
 
-			// Create new head using prev head.
-			const [headKey] = updatedList;
-			const head = updatedHash[headKey];
+		// Create new head using prev head.
+		const [headKey] = updatedList;
+		const head = updatedHash[headKey];
 
-			if (currentDirection.current == DIRECTIONS.RIGHT) {
-				const newHead = { x: head.x, y: head.y + 1 };
-				const newHeadKey = generateKey(newHead.x, newHead.y);
-				updatedHash[newHeadKey] = newHead;
-				updatedList.unshift(newHeadKey);
-			} else if (currentDirection.current == DIRECTIONS.UP) {
-				const newHead = { x: head.x - 1, y: head.y };
-				const newHeadKey = generateKey(newHead.x, newHead.y);
-				updatedHash[newHeadKey] = newHead;
-				updatedList.unshift(newHeadKey);
-			} else if (currentDirection.current == DIRECTIONS.DOWN) {
-				const newHead = { x: head.x + 1, y: head.y };
-				const newHeadKey = generateKey(newHead.x, newHead.y);
-				updatedHash[newHeadKey] = newHead;
-				updatedList.unshift(newHeadKey);
-			} else if (currentDirection.current == DIRECTIONS.LEFT) {
-				const newHead = { x: head.x, y: head.y - 1 };
-				const newHeadKey = generateKey(newHead.x, newHead.y);
-				updatedHash[newHeadKey] = newHead;
-				updatedList.unshift(newHeadKey);
-			}
-
-			return { hash: updatedHash, list: updatedList };
-		});
+		let newHead;
+		if (currentDirection.current == DIRECTIONS.RIGHT) {
+			newHead = { x: head.x, y: head.y + 1 };
+			const newHeadKey = generateKey(newHead.x, newHead.y);
+			updatedHash[newHeadKey] = newHead;
+			updatedList.unshift(newHeadKey);
+		} else if (currentDirection.current == DIRECTIONS.UP) {
+			newHead = { x: head.x - 1, y: head.y };
+			const newHeadKey = generateKey(newHead.x, newHead.y);
+			updatedHash[newHeadKey] = newHead;
+			updatedList.unshift(newHeadKey);
+		} else if (currentDirection.current == DIRECTIONS.DOWN) {
+			newHead = { x: head.x + 1, y: head.y };
+			const newHeadKey = generateKey(newHead.x, newHead.y);
+			updatedHash[newHeadKey] = newHead;
+			updatedList.unshift(newHeadKey);
+		} else if (currentDirection.current == DIRECTIONS.LEFT) {
+			newHead = { x: head.x, y: head.y - 1 };
+			const newHeadKey = generateKey(newHead.x, newHead.y);
+			updatedHash[newHeadKey] = newHead;
+			updatedList.unshift(newHeadKey);
+		}
+		if (newHead.x < NUMBER_OF_ROWS && newHead.x >= 0 && newHead.y >= 0 && newHead.y < NUMBER_OF_COLUMNS) {
+			setSnake({ hash: updatedHash, list: updatedList });
+		} else {
+			resetSnake();
+		}
 	}
 
 	const moveUp = () => {
