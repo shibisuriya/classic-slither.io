@@ -6,7 +6,8 @@
 	"scripts": {
 		"dev": "webpack serve",
 		"build": "webpack --mode production",
-		"prettify": "npx prettier --write '**/*.{js,jsx,ts,tsx,css}'"
+		"prettify": "npx prettier --write '**/*.{js,jsx,ts,tsx,css}'",
+		"prepare": "husky install"
 	},
 	"keywords": [],
 	"author": "",
