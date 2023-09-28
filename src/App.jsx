@@ -14,8 +14,12 @@ function App() {
 			'0-1': { x: 0, y: 1 },
 			'0-2': { x: 0, y: 2 },
 			'0-3': { x: 0, y: 3 },
+			'0-4': { x: 0, y: 4 },
+			'0-5': { x: 0, y: 5 },
+			'0-6': { x: 0, y: 6 },
+			'0-7': { x: 0, y: 7 },
 		},
-		list: ['0-3', '0-2', '0-1', '0-0'],
+		list: ['0-7', '0-6', '0-5', '0-4', '0-3', '0-2', '0-1', '0-0'],
 	};
 	const [snake, setSnake] = useState(initialState);
 
@@ -37,28 +41,31 @@ function App() {
 		const head = updatedHash[headKey];
 
 		let newHead;
+		let newHeadKey;
 		if (currentDirection.current == DIRECTIONS.RIGHT) {
 			newHead = { x: head.x, y: head.y + 1 };
-			const newHeadKey = generateKey(newHead.x, newHead.y);
+			newHeadKey = generateKey(newHead.x, newHead.y);
 			updatedHash[newHeadKey] = newHead;
 			updatedList.unshift(newHeadKey);
 		} else if (currentDirection.current == DIRECTIONS.UP) {
 			newHead = { x: head.x - 1, y: head.y };
-			const newHeadKey = generateKey(newHead.x, newHead.y);
+			newHeadKey = generateKey(newHead.x, newHead.y);
 			updatedHash[newHeadKey] = newHead;
 			updatedList.unshift(newHeadKey);
 		} else if (currentDirection.current == DIRECTIONS.DOWN) {
 			newHead = { x: head.x + 1, y: head.y };
-			const newHeadKey = generateKey(newHead.x, newHead.y);
+			newHeadKey = generateKey(newHead.x, newHead.y);
 			updatedHash[newHeadKey] = newHead;
 			updatedList.unshift(newHeadKey);
 		} else if (currentDirection.current == DIRECTIONS.LEFT) {
 			newHead = { x: head.x, y: head.y - 1 };
-			const newHeadKey = generateKey(newHead.x, newHead.y);
+			newHeadKey = generateKey(newHead.x, newHead.y);
 			updatedHash[newHeadKey] = newHead;
 			updatedList.unshift(newHeadKey);
 		}
-		if (newHead.x < NUMBER_OF_ROWS && newHead.x >= 0 && newHead.y >= 0 && newHead.y < NUMBER_OF_COLUMNS) {
+		if (newHeadKey in snake.hash) {
+			resetSnake();
+		} else if (newHead.x < NUMBER_OF_ROWS && newHead.x >= 0 && newHead.y >= 0 && newHead.y < NUMBER_OF_COLUMNS) {
 			setSnake({ hash: updatedHash, list: updatedList });
 		} else {
 			resetSnake();
