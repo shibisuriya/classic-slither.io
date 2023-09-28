@@ -1,78 +1,101 @@
-import React, { useState, useEffect, useRef } from "react";
-import useOrderedHash from "./hooks/useOrderedHash";
-import Grid from "./Grid";
+import React, { useState, useEffect, useRef } from 'react';
+import useOrderedHash from './hooks/useOrderedHash';
+import { generateKey } from './utils';
+import Grid from './Grid';
 
 const DIRECTION = {
-  UP: "up",
-  DOWN: "down",
-  LEFT: "left",
-  RIGHT: "right",
+	UP: 'up',
+	DOWN: 'down',
+	LEFT: 'left',
+	RIGHT: 'right',
 };
 
 function App() {
-  const [currentDirection, setCurrentDirection] = useState(DIRECTION.DOWN);
+	const [currentDirection, setCurrentDirection] = useState(DIRECTION.RIGHT);
 
-  function moveForward() {
-    setSnake((prev) => {
-      const { x, y } = prev;
-      if (currentDirection == DIRECTION.UP) {
-        return { ...prev, x: x - 1 };
-      } else if (currentDirection == DIRECTION.DOWN) {
-        return { ...prev, x: x + 1 };
-      } else if (currentDirection == DIRECTION.LEFT) {
-        return { ...prev, y: y - 1 };
-      } else if (currentDirection == DIRECTION.RIGHT) {
-        return { ...prev, y: y + 1 };
-      }
-    });
-  }
+	function moveForward() {
+		setSnake((prevSnake) => {
+			const updatedHash = { ...prevSnake.hash };
+			const updatedList = [...prevSnake.list];
+			const [head] = updatedList;
+			const tailKey = updatedList.pop(); // mutates.
+			delete updatedHash[tailKey];
+			const { x, y } = updatedHash[head];
 
-  const up = () => {
-    setCurrentDirection(DIRECTION.UP);
-  };
+			if (currentDirection == DIRECTION.UP) {
+				const newHead = { x: x - 1, y };
+				updatedHash[generateKey(newHead.x, newHead.y)] = newHead;
+				updatedList.unshift(newHead);
+				return { hash: updatedHash, list: updatedList };
+			} else if (currentDirection == DIRECTION.DOWN) {
+				const newHead = { x: x - 1, y };
+				return { hash: updatedHash, list: updatedList };
+			} else if (currentDirection == DIRECTION.LEFT) {
+				const newHead = { x: x - 1, y };
+				return { hash: updatedHash, list: updatedList };
+			} else if (currentDirection == DIRECTION.RIGHT) {
+				const newHead = { x: x, y: y + 1 };
+				const newHeadKey = generateKey(newHead.x, newHead.y);
+				updatedHash[newHeadKey] = newHead;
+				updatedList.unshift(newHeadKey);
+				return { hash: updatedHash, list: updatedList };
+			}
+		});
+	}
 
-  const down = () => {
-    setCurrentDirection(DIRECTION.DOWN);
-  };
+	const up = () => {
+		setCurrentDirection(DIRECTION.UP);
+	};
 
-  const right = () => {
-    setCurrentDirection(DIRECTION.RIGHT);
-  };
+	const down = () => {
+		setCurrentDirection(DIRECTION.DOWN);
+	};
 
-  const left = () => {
-    setCurrentDirection(DIRECTION.LEFT);
-  };
+	const right = () => {
+		setCurrentDirection(DIRECTION.RIGHT);
+	};
 
-  useEffect(() => {
-    const timer = setInterval(moveForward.bind(this), 1 * 300);
+	const left = () => {
+		setCurrentDirection(DIRECTION.LEFT);
+	};
 
-    document.addEventListener("keydown", (event) => {
-      const key = event.key.toLowerCase();
-      if (["w", "arrowup"].includes(key)) {
-        up();
-      } else if (["s", "arrowdown"].includes(key)) {
-        down();
-      } else if (["a", "arrowleft"].includes(key)) {
-        left();
-      } else if (["d", "arrowright"].includes(key)) {
-        right();
-      }
-    });
+	useEffect(() => {
+		const timer = setInterval(moveForward, 1 * 1000);
 
-    return () => {
-      clearInterval(timer);
-    };
-  }, [currentDirection]);
+		document.addEventListener('keydown', (event) => {
+			const key = event.key.toLowerCase();
+			if (['w', 'arrowup'].includes(key)) {
+				up();
+			} else if (['s', 'arrowdown'].includes(key)) {
+				down();
+			} else if (['a', 'arrowleft'].includes(key)) {
+				left();
+			} else if (['d', 'arrowright'].includes(key)) {
+				right();
+			}
+		});
 
-  const [snake, setSnake] = useState({ x: 0, y: 0 });
+		return () => {
+			clearInterval(timer);
+		};
+	}, [currentDirection, snake]);
 
-  console.log(snake);
+	// snake is based on the ordered hashmap data structure.
+	const [snake, setSnake] = useState({
+		hash: {
+			'0-0': { x: 0, y: 0 },
+			'0-1': { x: 0, y: 1 },
+			'0-2': { x: 0, y: 2 },
+			'0-3': { x: 0, y: 3 },
+		},
+		list: ['0-3', '0-2', '0-1', '0-0'],
+	});
 
-  return (
-    <div>
-      <Grid snake={snake} />
-    </div>
-  );
+	return (
+		<div>
+			<Grid snake={snake} />
+		</div>
+	);
 }
 
 export default App;
