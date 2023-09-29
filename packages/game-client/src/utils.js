@@ -1,10 +1,9 @@
 import { NUMBER_OF_COLUMNS, NUMBER_OF_ROWS, DIRECTIONS } from './constants';
 
-export const generateKey = (i, j, columns, rows) => {
-	// TODO: tighten this code.
-	// if (i > columns || j > rows) {
-	// 	throw exceptions.invalidCoordinates(i, j);
-	// }
+export const generateKey = (i, j) => {
+	if (i > NUMBER_OF_ROWS || j > NUMBER_OF_COLUMNS) {
+		throw new Error(`Invalid coordinates! ${i} ${j}`);
+	}
 	return `${i}-${j}`;
 };
 
