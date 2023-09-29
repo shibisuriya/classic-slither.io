@@ -99,6 +99,13 @@ function App() {
 		return directions.current[snakeId];
 	};
 
+	function collisionDetection(snakeHead, snakeState) {
+		let hash = getSnakeHash(snakeState)
+		if (snakeHead in hash) {
+			return true
+		}
+	}
+
 	const moveSnakeForward = (snakeId) => {
 		setSnakes((prevSnakes) => {
 			const resetSnake = (snakeId) => {
@@ -143,7 +150,7 @@ function App() {
 					updatedHash[newHeadKey] = newHead;
 					updatedList.unshift(newHeadKey);
 				}
-				if (newHeadKey in prevSnakes[snakeId].hash) {
+				if (newHeadKey in prevSnakes[snakeId].hash || collisionDetection(newHeadKey,prevSnakes)) {
 					// Snake collided with itself.
 					return resetSnake(snakeId);
 				} else if (
@@ -167,6 +174,16 @@ function App() {
 	const setDirection = (snakeId, direction) => {
 		directions.current[snakeId] = direction;
 	};
+
+	//gets all the hashes of snakes and returns it as an object :)
+
+	const getSnakeHash = (state) => {
+		const combinedHash = Object.values(state).reduce((result, obj) => {
+		Object.assign(result, obj.hash);
+		return result;
+		}, {});
+		return combinedHash;
+	}
 
 	const up = (snakeId) => {
 		const direction = getDirection(snakeId);
