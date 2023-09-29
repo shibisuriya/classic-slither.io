@@ -12,7 +12,19 @@ for (let i = 0; i < NUMBER_OF_ROWS; i++) {
 	grid.push(row);
 }
 
-function Cell({ x, y, body, head, color }) {
+
+
+function Grid({ snakes, foodBox }) {
+	
+	function isSnakeCell(key) {
+		for (const snake of Object.keys(snakes)) {
+			if (snakes[snake].hash[key]) {
+				return snakes[snake].headColor;
+			}
+		}
+		return 'white';
+	}
+	function Cell({ x, y, body, head, color }) {
 	// const cellColor = () => {
 	// 	if (body) {
 	// 		return { backgroundColor: 'red' };
@@ -23,6 +35,10 @@ function Cell({ x, y, body, head, color }) {
 	// 	}
 	// };
 	const cellColor = () => {
+		if (foodBox["7-11"].x == x && foodBox["7-11"].y == y) {
+			console.log('food')
+			return { backgroundColor : "green"}
+		}
 		return { backgroundColor: color };
 	};
 	return (
@@ -39,20 +55,17 @@ function Cell({ x, y, body, head, color }) {
 	);
 }
 
-function Grid({ snakes }) {
-	function isSnakeCell(key) {
-		for (const snake of Object.keys(snakes)) {
-			if (snakes[snake].hash[key]) {
-				return snakes[snake].headColor;
-			}
-		}
-		return 'white';
-	}
+	// function foodCell(key) {
+	// 	if (foodBox[key]) {
+	// 		return "green"
+	// 	}
+	// 	return 'white'
+	// }
 
 	const makeCell = (cell) => {
 		const [x, y] = cell;
 		const key = generateKey(x, y);
-		return <Cell x={x} y={y} key={key} head={true} color={isSnakeCell(key)} />;
+		return <Cell x={x} y={y} key={key} head={true} color={isSnakeCell(key)}  />;
 	};
 
 	return (

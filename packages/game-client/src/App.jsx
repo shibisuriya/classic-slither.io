@@ -5,6 +5,11 @@ import Grid from './Grid';
 
 const SPEED = 1 * 100;
 
+const foodBox = {
+	"7-11" : {x: 7,y:11}
+}
+
+
 function App() {
 	// const socket = useRef();
 	useEffect(() => {
@@ -106,12 +111,20 @@ function App() {
 		}
 	}
 
+	function foodConsumed(snakeHead, food) {
+		if (food.hasOwnProperty(snakeHead))
+		return true
+	}
+
 	const moveSnakeForward = (snakeId) => {
 		setSnakes((prevSnakes) => {
+
+
 			const resetSnake = (snakeId) => {
 				setDirection(snakeId, defaultDirections[snakeId]); // Set to the default initial direction.
 				return { ...snakes, [snakeId]: initialState[snakeId] };
 			};
+
 
 			if (snakeId in prevSnakes) {
 				const updatedHash = { ...prevSnakes[snakeId].hash };
@@ -119,10 +132,12 @@ function App() {
 
 				// Remove tail.
 				const tailKey = updatedList.pop(); // mutates.
+				const tailHash=updatedHash[tailKey]
 				delete updatedHash[tailKey];
 
-				// Create new head using prev head.
-				const [headKey] = updatedList;
+				// Create new head using prev head. ( headKey takes first element from the list )
+
+				const [headKey] = updatedList;       
 				const head = updatedHash[headKey];
 
 				const direction = getDirection(snakeId);
@@ -150,10 +165,17 @@ function App() {
 					updatedHash[newHeadKey] = newHead;
 					updatedList.unshift(newHeadKey);
 				}
-				if (newHeadKey in prevSnakes[snakeId].hash || collisionDetection(newHeadKey,prevSnakes)) {
+				if ( collisionDetection(newHeadKey,prevSnakes)) {
 					// Snake collided with itself.
 					return resetSnake(snakeId);
-				} else if (
+				} else if (foodConsumed(newHeadKey,foodBox)) {
+					newHead = { x: foodBox["7-11"].x, y: foodBox["7-11"].y - 1 };
+					newHeadKey = generateKey(newHead.x, newHead.y);
+					updatedHash[newHeadKey] = newHead;
+					updatedList.unshift(newHeadKey);
+					updatedList.push(tailKey)
+					updatedHash[tailKey]=tailHash
+				}else if (
 					newHead.x < NUMBER_OF_ROWS &&
 					newHead.x >= 0 &&
 					newHead.y >= 0 &&
@@ -264,7 +286,7 @@ function App() {
 					</option>
 				))}
 			</select>
-			<Grid snakes={snakes} />
+			<Grid snakes={snakes} foodBox={foodBox} />
 		</div>
 	);
 }
