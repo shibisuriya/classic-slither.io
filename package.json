@@ -16,11 +16,13 @@
 		"packages/*"
 	],
 	"private": true,
-	"dependencies": {},
+	"dependencies": {
+		"yarn": "^1.22.19"
+	},
 	"devDependencies": {
-		"prettier": "^3.0.3",
 		"lerna": "^7.1.4",
-		"lint-staged": "^14.0.1"
+		"lint-staged": "^14.0.1",
+		"prettier": "^3.0.3"
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx,css}": "prettier --write"
