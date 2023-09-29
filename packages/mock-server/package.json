@@ -1,0 +1,15 @@
+{
+	"scripts": {
+		"start": "nodemon ./src/main.js"
+	},
+	"name": "mock-server",
+	"version": "1.0.0",
+	"main": "index.js",
+	"license": "MIT",
+	"dependencies": {
+		"ws": "^8.14.2"
+	},
+	"devDependencies": {
+		"nodemon": "^3.0.1"
+	}
+}
