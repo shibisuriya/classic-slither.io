@@ -12,15 +12,18 @@ for (let i = 0; i < NUMBER_OF_ROWS; i++) {
 	grid.push(row);
 }
 
-function Cell({ x, y, body, head }) {
+function Cell({ x, y, body, head, color }) {
+	// const cellColor = () => {
+	// 	if (body) {
+	// 		return { backgroundColor: 'red' };
+	// 	} else if (head) {
+	// 		return { backgroundColor: 'black' };
+	// 	} else {
+	// 		return { backgroundColor: 'white' };
+	// 	}
+	// };
 	const cellColor = () => {
-		if (body) {
-			return { backgroundColor: 'red' };
-		} else if (head) {
-			return { backgroundColor: 'black' };
-		} else {
-			return { backgroundColor: 'white' };
-		}
+		return { backgroundColor: color };
 	};
 	return (
 		<div
@@ -36,20 +39,20 @@ function Cell({ x, y, body, head }) {
 	);
 }
 
+function Grid({ snakes }) {
+	function isSnakeCell(key) {
+		for (const snake of Object.keys(snakes)) {
+			if (snakes[snake].hash[key]) {
+				return snakes[snake].headColor;
+			}
+		}
+		return 'white';
+	}
 
-// useEffect(() => {
-  
-// },[])
-
-function Grid({ snake }) {
 	const makeCell = (cell) => {
 		const [x, y] = cell;
 		const key = generateKey(x, y);
-		if (key in snake.hash) {
-			return <Cell x={x} y={y} key={key} head={true} />;
-		} else {
-			return <Cell x={x} y={y} key={key} />;
-		}
+		return <Cell x={x} y={y} key={key} head={true} color={isSnakeCell(key)} />;
 	};
 
 	return (

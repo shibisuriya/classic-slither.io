@@ -1,36 +1,26 @@
 {
-	"name": "js-webpack",
+	"name": "classic-slither.io",
 	"version": "1.0.0",
-	"description": "",
 	"main": "index.js",
+	"repository": "https://github.com/shibisuriya/classic-slither.io.git",
+	"author": "Shibi Suriya <shibi@kissflow.com>",
+	"license": "MIT",
 	"scripts": {
-		"dev": "webpack serve",
-		"build": "webpack --mode production",
 		"prettify": "npx prettier --write '**/*.{js,jsx,ts,tsx,css}'",
-		"prepare": "husky install"
+		"prepare": "husky install",
+		"dev:client": "lerna run dev --scope=game-client",
+		"build:client": "lerna run build --scope=game-client",
+		"start:mock-server": "lerna run start --scope=mock-server"
 	},
-	"keywords": [],
-	"author": "",
-	"license": "ISC",
+	"workspaces": [
+		"packages/*"
+	],
+	"private": true,
+	"dependencies": {},
 	"devDependencies": {
-		"@babel/core": "^7.23.0",
-		"@babel/preset-env": "^7.22.9",
-		"@babel/preset-react": "^7.22.5",
-		"babel-loader": "^9.1.3",
-		"css-loader": "^6.8.1",
-		"html-webpack-plugin": "^5.5.3",
 		"prettier": "^3.0.3",
-		"scss-loader": "^0.0.1",
-		"style-loader": "^3.3.3",
-		"webpack": "^5.88.2",
-		"webpack-cli": "^5.1.4",
-		"webpack-dev-server": "^4.15.1",
-		"husky": "^8.0.0",
+		"lerna": "^7.1.4",
 		"lint-staged": "^14.0.1"
-	},
-	"dependencies": {
-		"react": "^18.2.0",
-		"react-dom": "^18.2.0"
 	},
 	"lint-staged": {
 		"*.{js,jsx,ts,tsx,css}": "prettier --write"

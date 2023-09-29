@@ -23,10 +23,10 @@ jobs:
             - name: Install dependencies and build
               run: |
                   yarn install
-                  yarn run build
+                  yarn run build:client
 
             - name: Deploy to gh-pages
               uses: peaceiris/actions-gh-pages@v3
               with:
                   github_token: ${{ secrets.GH_DEPLOY }}
-                  publish_dir: ./dist # Adjust the path to the build output directory
+                  publish_dir: ./packages/game-client/dist # Adjust the path to the build output directory
