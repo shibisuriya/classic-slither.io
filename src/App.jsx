@@ -1,122 +1,136 @@
-import React, { useState, useEffect, useRef } from "react";
-import useOrderedHash from "./hooks/useOrderedHash";
-import Grid from "./Grid";
+import React, { useState, useEffect, useRef } from 'react';
+import { generateKey, getOppositeDirection } from './utils';
+import { DIRECTIONS, NUMBER_OF_COLUMNS, NUMBER_OF_ROWS, DEFAULT_DIRECTION } from './constants';
+import Grid from './Grid';
 
-const DIRECTION = {
-  UP: "up",
-  DOWN: "down",
-  LEFT: "left",
-  RIGHT: "right",
-};
+const SPEED = 1 * 100;
 
 function App() {
-  const [currentDirection, setCurrentDirection] = useState(DIRECTION.DOWN);
+	const currentDirection = useRef(DIRECTIONS.RIGHT);
 
-  function moveForward() {
-    setSnake((prev) => {
-      const { x, y } = prev;
-      if (currentDirection == DIRECTION.UP) {
-        return { ...prev, x: x - 1 };
-      } else if (currentDirection == DIRECTION.DOWN) {
-        return { ...prev, x: x + 1 };
-      } else if (currentDirection == DIRECTION.LEFT) {
-        return { ...prev, y: y - 1 };
-      } else if (currentDirection == DIRECTION.RIGHT) {
-        return { ...prev, y: y + 1 };
-      }
-    });
-  }
+	const initialState = {
+		hash: {
+			'0-0': { x: 0, y: 0 },
+			'0-1': { x: 0, y: 1 },
+			'0-2': { x: 0, y: 2 },
+			'0-3': { x: 0, y: 3 },
+			'0-4': { x: 0, y: 4 },
+			'0-5': { x: 0, y: 5 },
+			'0-6': { x: 0, y: 6 },
+			'0-7': { x: 0, y: 7 },
+		},
+		list: ['0-7', '0-6', '0-5', '0-4', '0-3', '0-2', '0-1', '0-0'],
+	};
+	const [snake, setSnake] = useState(initialState);
 
-  function getOppDirection(dir) {
-    if (dir == DIRECTION.UP) {
-      return DIRECTION.DOWN;
-    } else if (dir == DIRECTION.DOWN) {
-      return DIRECTION.UP;
-    } else if (dir == DIRECTION.RIGHT) {
-      return DIRECTION.LEFT;
-    } else {
-      return DIRECTION.RIGHT;
-    }
-  }
+	const resetSnake = () => {
+		currentDirection.current = DEFAULT_DIRECTION;
+		setSnake(initialState);
+	};
 
-  const up = () => {
-      setCurrentDirection(prevDirection => {
-        if (getOppDirection(prevDirection) == DIRECTION.UP) {
-          return prevDirection
-        } else {
-          return DIRECTION.UP
-          }
-      }
-        );
-  };
+	function moveForward() {
+		const updatedHash = { ...snake.hash };
+		const updatedList = [...snake.list];
 
-  const down = () => {
-    if ( getOppDirection() != currentDirection)
-      setCurrentDirection(prevDirection => {
-        if (getOppDirection(prevDirection) == DIRECTION.DOWN) {
-          return prevDirection
-        } else {
-          return DIRECTION.DOWN
-          }
-      }
-        );
-  };
+		// Remove tail.
+		const tailKey = updatedList.pop(); // mutates.
+		delete updatedHash[tailKey];
 
-  const right = () => {
-    if( getOppDirection() != currentDirection)
-      setCurrentDirection(prevDirection => {
-        if (getOppDirection(prevDirection) == DIRECTION.RIGHT) {
-          return prevDirection
-        } else {
-          return DIRECTION.RIGHT
-          }
-      }
-        );
-  };
+		// Create new head using prev head.
+		const [headKey] = updatedList;
+		const head = updatedHash[headKey];
 
-  const left = () => {
-    if( getOppDirection() != currentDirection)
-      setCurrentDirection(prevDirection => {
-        if (getOppDirection(prevDirection) == DIRECTION.LEFT) {
-          return prevDirection
-        } else {
-          return DIRECTION.LEFT
-          }
-      }
-        );
-  };
+		let newHead;
+		let newHeadKey;
+		if (currentDirection.current == DIRECTIONS.RIGHT) {
+			newHead = { x: head.x, y: head.y + 1 };
+			newHeadKey = generateKey(newHead.x, newHead.y);
+			updatedHash[newHeadKey] = newHead;
+			updatedList.unshift(newHeadKey);
+		} else if (currentDirection.current == DIRECTIONS.UP) {
+			newHead = { x: head.x - 1, y: head.y };
+			newHeadKey = generateKey(newHead.x, newHead.y);
+			updatedHash[newHeadKey] = newHead;
+			updatedList.unshift(newHeadKey);
+		} else if (currentDirection.current == DIRECTIONS.DOWN) {
+			newHead = { x: head.x + 1, y: head.y };
+			newHeadKey = generateKey(newHead.x, newHead.y);
+			updatedHash[newHeadKey] = newHead;
+			updatedList.unshift(newHeadKey);
+		} else if (currentDirection.current == DIRECTIONS.LEFT) {
+			newHead = { x: head.x, y: head.y - 1 };
+			newHeadKey = generateKey(newHead.x, newHead.y);
+			updatedHash[newHeadKey] = newHead;
+			updatedList.unshift(newHeadKey);
+		}
+		if (newHeadKey in snake.hash) {
+			resetSnake();
+		} else if (newHead.x < NUMBER_OF_ROWS && newHead.x >= 0 && newHead.y >= 0 && newHead.y < NUMBER_OF_COLUMNS) {
+			setSnake({ hash: updatedHash, list: updatedList });
+		} else {
+			resetSnake();
+		}
+	}
 
-  useEffect(() => {
-    const timer = setInterval(moveForward.bind(this), 1 * 300);
+	const moveUp = () => {
+		if (currentDirection.current == DIRECTIONS.UP) {
+			// moving up only.
+			return;
+		} else if (getOppositeDirection(currentDirection.current) !== DIRECTIONS.UP) {
+			currentDirection.current = DIRECTIONS.UP;
+		}
+	};
 
-    document.addEventListener("keydown", (event) => {
-      const key = event.key.toLowerCase();
-      if (["w", "arrowup"].includes(key) ) {
-        up();
-      } else if (["s", "arrowdown"].includes(key) ) {
-        down();
-      } else if (["a", "arrowleft"].includes(key) ) {
-        left();
-      } else if (["d", "arrowright"].includes(key) ) {
-        right();
-      }
-    });
+	const moveDown = () => {
+		if (currentDirection.current == DIRECTIONS.DOWN) {
+			return;
+		} else if (getOppositeDirection(currentDirection.current) !== DIRECTIONS.DOWN) {
+			currentDirection.current = DIRECTIONS.DOWN;
+		}
+	};
 
-    return () => {
-      moveForward()
-      clearInterval(timer);
-    };
-  }, [currentDirection]);
+	const moveRight = () => {
+		if (currentDirection.current == DIRECTIONS.RIGHT) {
+			return;
+		} else if (getOppositeDirection(currentDirection.current) !== DIRECTIONS.RIGHT) {
+			currentDirection.current = DIRECTIONS.RIGHT;
+		}
+	};
 
-  const [snake, setSnake] = useState({ x: 0, y: 0 });
+	const moveLeft = () => {
+		if (currentDirection.current == DIRECTIONS.LEFT) {
+			return;
+		} else if (getOppositeDirection(currentDirection.current) !== DIRECTIONS.LEFT) {
+			currentDirection.current = DIRECTIONS.LEFT;
+		}
+	};
 
-  // console.log(snake);
+	useEffect(() => {
+		const timer = setInterval(moveForward, SPEED);
 
-  return (
-    <div>
-      <Grid snake={snake} />
-    </div>
-  );
+		document.addEventListener('keydown', (event) => {
+			const key = event.key.toLowerCase();
+			if (['w', 'arrowup'].includes(key)) {
+				moveUp();
+			} else if (['s', 'arrowdown'].includes(key)) {
+				moveDown();
+			} else if (['a', 'arrowleft'].includes(key)) {
+				moveLeft();
+			} else if (['d', 'arrowright'].includes(key)) {
+				moveRight();
+			}
+		});
+
+		return () => {
+			clearInterval(timer);
+		};
+	}, [snake]);
+
+	return (
+		<div>
+			<Grid snake={snake} />
+		</div>
+	);
 }
 
 export default App;
