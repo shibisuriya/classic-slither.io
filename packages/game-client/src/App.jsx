@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { generateKey, getOppositeDirection } from './utils';
-import { DIRECTIONS, NUMBER_OF_COLUMNS, NUMBER_OF_ROWS, DEFAULT_DIRECTION } from './constants';
+import { generateKey, getOppositeDirection, generateRandomNumber } from './utils';
+import { DIRECTIONS, NUMBER_OF_COLUMNS, NUMBER_OF_ROWS } from './constants';
 import { GRID_MAP } from './computed';
-console.log(GRID_MAP);
+import { useFood } from './hooks';
 import Grid from './Grid';
 
 const SPEED = 1 * 100;
@@ -37,6 +37,7 @@ function App() {
 	}, []);
 
 	const [snakeId, setSnakeId] = useState(1);
+	const { food, setFood, removeFood, isFood } = useFood();
 	// const playerId = useRef(2);
 
 	// Keep the direction of the snakes inside useRef since we don't
@@ -54,7 +55,7 @@ function App() {
 	const initialState = {
 		1: {
 			headColor: 'red',
-			bodyColor: 'black',
+			bodyColor: 'green',
 			hash: {
 				'0-0': { x: 0, y: 0 },
 				'0-1': { x: 0, y: 1 },
@@ -83,7 +84,7 @@ function App() {
 		},
 		3: {
 			headColor: 'yellow',
-			bodyColor: 'black',
+			bodyColor: 'red',
 			hash: {
 				'10-0': { x: 10, y: 0 },
 				'10-1': { x: 10, y: 1 },
@@ -96,6 +97,39 @@ function App() {
 		},
 	};
 	const [snakes, setSnakes] = useState(initialState);
+
+	const getSnakeCells = () => {
+		// return cells that are occupied by snakes.
+		return Object.values(snakes).reduce((hash, snake) => {
+			// TODO: check if the data is consistent here.
+			Object.assign(hash, snake.hash);
+			return hash;
+		}, {});
+	};
+
+	const spawnFood = () => {
+		const snakeCells = getSnakeCells();
+		const emptyCells = {};
+
+		for (const [key, value] of Object.entries(GRID_MAP)) {
+			if (!(key in snakeCells) && !(key in food)) {
+				Object.assign(emptyCells, { [key]: value });
+			}
+		}
+		const keys = Object.keys(emptyCells);
+		if (keys.length > 0) {
+			const randomEmptyCell = emptyCells[keys[generateRandomNumber(keys.length)]];
+			const { x, y } = randomEmptyCell;
+			setFood(x, y);
+		}
+	};
+
+	useEffect(() => {
+		const timer = setInterval(spawnFood, 1 * 50);
+		return () => {
+			clearInterval(timer);
+		};
+	}, [food]);
 
 	const getDirection = (snakeId) => {
 		return directions.current[snakeId];
@@ -249,7 +283,7 @@ function App() {
 					</option>
 				))}
 			</select>
-			<Grid snakes={snakes} />
+			<Grid snakes={snakes} food={food} />
 		</div>
 	);
 }

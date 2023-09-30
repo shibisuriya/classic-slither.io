@@ -32,3 +32,9 @@ export const getOppositeDirection = (direction) => {
 			throw new Error(`Invalid direction, ${direction}.`);
 	}
 };
+
+export const generateRandomNumber = (max, min = 0) => {
+	const randomDecimal = Math.random();
+	const randomInRange = randomDecimal * (max - min) + min;
+	return Math.floor(randomInRange);
+};
