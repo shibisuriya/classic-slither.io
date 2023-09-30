@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { generateKey, getOppositeDirection } from './utils';
 import { DIRECTIONS, NUMBER_OF_COLUMNS, NUMBER_OF_ROWS, DEFAULT_DIRECTION } from './constants';
+import { GRID_MAP } from './computed';
+console.log(GRID_MAP);
 import Grid from './Grid';
 
 const SPEED = 1 * 100;
