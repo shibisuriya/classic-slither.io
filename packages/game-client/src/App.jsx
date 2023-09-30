@@ -6,6 +6,7 @@ import { useFood } from './hooks';
 import Grid from './Grid';
 
 const SPEED = 1 * 100;
+const FOOD_SPAWN_INTERVAL = 1 * 10;
 
 function App() {
 	// const socket = useRef();
@@ -47,6 +48,7 @@ function App() {
 		1: DIRECTIONS.DOWN,
 		2: DIRECTIONS.RIGHT,
 		3: DIRECTIONS.RIGHT,
+		4: DIRECTIONS.RIGHT,
 	};
 
 	const directions = useRef(defaultDirections);
@@ -95,6 +97,20 @@ function App() {
 			},
 			list: ['10-5', '10-4', '10-3', '10-2', '10-1', '10-0'],
 		},
+		4: {
+			headColor: 'green',
+			bodyColor: 'blue',
+			hash: {
+				'12-0': { x: 12, y: 0 },
+				'12-1': { x: 12, y: 1 },
+				'12-2': { x: 12, y: 2 },
+				'12-3': { x: 12, y: 3 },
+				'12-4': { x: 12, y: 4 },
+				'12-5': { x: 12, y: 5 },
+				'12-6': { x: 12, y: 6 },
+			},
+			list: ['12-6', '12-5', '12-4', '12-3', '12-2', '12-1', '12-0'],
+		},
 	};
 	const [snakes, setSnakes] = useState(initialState);
 
@@ -125,7 +141,7 @@ function App() {
 	};
 
 	useEffect(() => {
-		const timer = setInterval(spawnFood, 1 * 50);
+		const timer = setInterval(spawnFood, FOOD_SPAWN_INTERVAL);
 		return () => {
 			clearInterval(timer);
 		};
@@ -246,6 +262,7 @@ function App() {
 			moveSnakeForward(snakeId);
 			moveSnakeForward(snakeId + 1);
 			moveSnakeForward(snakeId + 2);
+			moveSnakeForward(snakeId + 3);
 		}, SPEED);
 		const abortController = new AbortController();
 
