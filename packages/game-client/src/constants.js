@@ -33,7 +33,15 @@ const TICKS = {
 	0.25: 0.25 * 1000,
 };
 
+const defaultDirections = {
+	1: DIRECTIONS.DOWN,
+	2: DIRECTIONS.RIGHT,
+	3: DIRECTIONS.RIGHT,
+	4: DIRECTIONS.RIGHT,
+};
+
 export {
+	defaultDirections,
 	GRID_HEIGHT,
 	GRID_WIDTH,
 	CELL_DIMENSION,

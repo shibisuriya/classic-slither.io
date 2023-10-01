@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { DIRECTIONS } from '../constants';
 
 const useDirection = (initialState) => {
-	const directions = useRef(initialState);
+	const directions = useRef({ ...initialState }); // useRef is changing the supplied object :(
 
 	const setDirection = (snakeId, direction) => {
 		directions.current[snakeId] = direction;

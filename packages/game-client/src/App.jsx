@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { generateKey, getOppositeDirection, generateRandomNumber } from './utils';
-import { NUMBER_OF_COLUMNS, NUMBER_OF_ROWS, DIRECTIONS } from './constants';
-import { GRID_MAP, initialSnakesState, defaultDirections } from './computed';
+import { NUMBER_OF_COLUMNS, NUMBER_OF_ROWS, DIRECTIONS, defaultDirections } from './constants';
+import { GRID_MAP, initialSnakesState } from './computed';
 import { useDirection, useFood, useTicks } from './hooks';
 import Grid from './Grid';
 import styles from './app.module.css';
@@ -94,6 +94,7 @@ function App() {
 	const moveSnakeForward = (snakeId) => {
 		setSnakes((prevSnakes) => {
 			const resetSnake = (snakeId) => {
+				debugger;
 				setDirection(snakeId, defaultDirections[snakeId]); // Set to the default initial direction.
 				return { ...snakes, [snakeId]: initialSnakesState[snakeId] };
 			};
