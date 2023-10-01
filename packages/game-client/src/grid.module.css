@@ -14,7 +14,7 @@
 }
 
 .protein {
-	background-color: cyan;
+	background-color: #d62828;
 
 	/* Enter */
 	-webkit-animation: scale-in-center 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;

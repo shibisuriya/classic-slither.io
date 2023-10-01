@@ -1,15 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { generateKey, getOppositeDirection, generateRandomNumber } from './utils';
-import { DIRECTIONS, NUMBER_OF_COLUMNS, NUMBER_OF_ROWS } from './constants';
-import { GRID_MAP } from './computed';
-import { useFood } from './hooks';
+import { NUMBER_OF_COLUMNS, NUMBER_OF_ROWS, DIRECTIONS } from './constants';
+import { GRID_MAP, initialSnakesState, defaultDirections } from './computed';
+import { useDirection, useFood, useTicks } from './hooks';
 import Grid from './Grid';
+import styles from './app.module.css';
 
 const SPEED = 1 * 100;
-const FOOD_SPAWN_INTERVAL = 1 * 10;
+const FOOD_SPAWN_INTERVAL = 1 * 1000;
 
 function App() {
 	// const socket = useRef();
+	useTicks();
 	useEffect(() => {
 		// For now I am going to be using a simple websocket server for
 		// developer & testing purposes.
@@ -38,81 +40,17 @@ function App() {
 	}, []);
 
 	const [snakeId, setSnakeId] = useState(1);
-	const { food, setFood, removeFood, isFood } = useFood();
+	const { food, setFood, removeFood } = useFood();
 	// const playerId = useRef(2);
 
 	// Keep the direction of the snakes inside useRef since we don't
 	// want to force rerender of the component when the user changes
 	// the direction.
-	const defaultDirections = {
-		1: DIRECTIONS.DOWN,
-		2: DIRECTIONS.RIGHT,
-		3: DIRECTIONS.RIGHT,
-		4: DIRECTIONS.RIGHT,
-	};
 
-	const directions = useRef(defaultDirections);
+	const { getDirection, setDown, setLeft, setRight, setUp, setDirection } = useDirection(defaultDirections);
 
 	// Don't keep direction of the snakes insides of useState()...
-	const initialState = {
-		1: {
-			headColor: 'red',
-			bodyColor: 'green',
-			hash: {
-				'0-0': { x: 0, y: 0 },
-				'0-1': { x: 0, y: 1 },
-				'0-2': { x: 0, y: 2 },
-				'0-3': { x: 0, y: 3 },
-				'0-4': { x: 0, y: 4 },
-				'0-5': { x: 0, y: 5 },
-				'0-6': { x: 0, y: 6 },
-			},
-			list: ['0-6', '0-5', '0-4', '0-3', '0-2', '0-1', '0-0'],
-		},
-		2: {
-			headColor: 'blue',
-			bodyColor: 'yellow',
-			hash: {
-				'5-0': { x: 5, y: 0 },
-				'5-1': { x: 5, y: 1 },
-				'5-2': { x: 5, y: 2 },
-				'5-3': { x: 5, y: 3 },
-				'5-4': { x: 5, y: 4 },
-				'5-5': { x: 5, y: 5 },
-				'5-6': { x: 5, y: 6 },
-				'5-7': { x: 5, y: 7 },
-			},
-			list: ['5-7', '5-6', '5-5', '5-4', '5-3', '5-2', '5-1', '5-0'],
-		},
-		3: {
-			headColor: 'yellow',
-			bodyColor: 'red',
-			hash: {
-				'10-0': { x: 10, y: 0 },
-				'10-1': { x: 10, y: 1 },
-				'10-2': { x: 10, y: 2 },
-				'10-3': { x: 10, y: 3 },
-				'10-4': { x: 10, y: 4 },
-				'10-5': { x: 10, y: 5 },
-			},
-			list: ['10-5', '10-4', '10-3', '10-2', '10-1', '10-0'],
-		},
-		4: {
-			headColor: 'green',
-			bodyColor: 'blue',
-			hash: {
-				'12-0': { x: 12, y: 0 },
-				'12-1': { x: 12, y: 1 },
-				'12-2': { x: 12, y: 2 },
-				'12-3': { x: 12, y: 3 },
-				'12-4': { x: 12, y: 4 },
-				'12-5': { x: 12, y: 5 },
-				'12-6': { x: 12, y: 6 },
-			},
-			list: ['12-6', '12-5', '12-4', '12-3', '12-2', '12-1', '12-0'],
-		},
-	};
-	const [snakes, setSnakes] = useState(initialState);
+	const [snakes, setSnakes] = useState(initialSnakesState);
 
 	const getSnakeCells = () => {
 		// return cells that are occupied by snakes.
@@ -121,6 +59,12 @@ function App() {
 			Object.assign(hash, snake.hash);
 			return hash;
 		}, {});
+	};
+
+	const removeSnake = (snakeId, prevSnakes) => {
+		const snakes = { ...prevSnakes };
+		delete snakes[snakeId];
+		return snakes;
 	};
 
 	const spawnFood = () => {
@@ -147,24 +91,16 @@ function App() {
 		};
 	}, [food]);
 
-	const getDirection = (snakeId) => {
-		return directions.current[snakeId];
-	};
-
 	const moveSnakeForward = (snakeId) => {
 		setSnakes((prevSnakes) => {
 			const resetSnake = (snakeId) => {
 				setDirection(snakeId, defaultDirections[snakeId]); // Set to the default initial direction.
-				return { ...snakes, [snakeId]: initialState[snakeId] };
+				return { ...snakes, [snakeId]: initialSnakesState[snakeId] };
 			};
 
 			if (snakeId in prevSnakes) {
 				const updatedHash = { ...prevSnakes[snakeId].hash };
 				const updatedList = [...prevSnakes[snakeId].list];
-
-				// Remove tail.
-				const tailKey = updatedList.pop(); // mutates.
-				delete updatedHash[tailKey];
 
 				// Create new head using prev head.
 				const [headKey] = updatedList;
@@ -195,9 +131,14 @@ function App() {
 					updatedHash[newHeadKey] = newHead;
 					updatedList.unshift(newHeadKey);
 				}
-				if (newHeadKey in prevSnakes[snakeId].hash) {
+
+				// Remove tail.
+				if (newHeadKey in food) {
+					removeFood(newHead.x, newHead.y);
+					return { ...prevSnakes, [snakeId]: { ...snakes[snakeId], hash: updatedHash, list: updatedList } };
+				} else if (newHeadKey in prevSnakes[snakeId].hash) {
 					// Snake collided with itself.
-					return resetSnake(snakeId);
+					return resetSnake(snakeId, prevSnakes);
 				} else if (
 					newHead.x < NUMBER_OF_ROWS &&
 					newHead.x >= 0 &&
@@ -205,19 +146,17 @@ function App() {
 					newHead.y < NUMBER_OF_COLUMNS
 				) {
 					// Snake moved.
+					const tailKey = updatedList.pop(); // mutates.
+					delete updatedHash[tailKey];
 					return { ...prevSnakes, [snakeId]: { ...snakes[snakeId], hash: updatedHash, list: updatedList } };
 				} else {
 					// Snake collided with the wall...
-					return resetSnake(snakeId);
+					return resetSnake(snakeId, prevSnakes);
 				}
 			} else {
 				throw new Error('The id mentioned is not in the hash!');
 			}
 		});
-	};
-
-	const setDirection = (snakeId, direction) => {
-		directions.current[snakeId] = direction;
 	};
 
 	const up = (snakeId) => {
@@ -226,7 +165,7 @@ function App() {
 			// moving up only.
 			return;
 		} else if (getOppositeDirection(direction) !== DIRECTIONS.UP) {
-			setDirection(snakeId, DIRECTIONS.UP);
+			setUp(snakeId);
 		}
 	};
 
@@ -235,7 +174,7 @@ function App() {
 		if (direction == DIRECTIONS.DOWN) {
 			return;
 		} else if (getOppositeDirection(direction) !== DIRECTIONS.DOWN) {
-			setDirection(snakeId, DIRECTIONS.DOWN);
+			setDown(snakeId);
 		}
 	};
 
@@ -244,7 +183,7 @@ function App() {
 		if (direction == DIRECTIONS.RIGHT) {
 			return;
 		} else if (getOppositeDirection(direction) !== DIRECTIONS.RIGHT) {
-			setDirection(snakeId, DIRECTIONS.RIGHT);
+			setRight(snakeId);
 		}
 	};
 
@@ -253,16 +192,15 @@ function App() {
 		if (direction == DIRECTIONS.LEFT) {
 			return;
 		} else if (getOppositeDirection(direction) !== DIRECTIONS.LEFT) {
-			setDirection(snakeId, DIRECTIONS.LEFT);
+			setLeft(snakeId);
 		}
 	};
 
 	useEffect(() => {
 		const timer = setInterval(() => {
-			moveSnakeForward(snakeId);
-			moveSnakeForward(snakeId + 1);
-			moveSnakeForward(snakeId + 2);
-			moveSnakeForward(snakeId + 3);
+			Object.keys(snakes).forEach((snakeId) => {
+				moveSnakeForward(snakeId);
+			});
 		}, SPEED);
 		const abortController = new AbortController();
 
@@ -292,7 +230,7 @@ function App() {
 	}, [snakes]);
 
 	return (
-		<div>
+		<div className={styles.game}>
 			<select value={snakeId} onChange={(e) => setSnakeId(e.target.value)}>
 				{Object.keys(snakes).map((snakeId, index) => (
 					<option value={snakeId} key={index}>
