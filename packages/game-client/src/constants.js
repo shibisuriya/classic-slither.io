@@ -1,6 +1,6 @@
 // in px (pixels)
-const GRID_WIDTH = 30 * 20;
-const GRID_HEIGHT = 30 * 20;
+const GRID_WIDTH = 30 * 30;
+const GRID_HEIGHT = 30 * 30;
 const CELL_DIMENSION = 30;
 
 if (GRID_HEIGHT % CELL_DIMENSION !== 0) {

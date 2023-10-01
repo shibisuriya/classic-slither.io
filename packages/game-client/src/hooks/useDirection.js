@@ -35,6 +35,7 @@ const useDirection = (initialState) => {
 		setLeft,
 		setRight,
 		getDirection,
+		setDirection,
 	};
 };
 
