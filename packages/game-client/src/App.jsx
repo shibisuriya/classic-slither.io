@@ -28,18 +28,26 @@ function Game() {
 
 	useInput({ snakes, onUp, onDown, onLeft, onRight, snakeId });
 
-	const { food, removeFood, spawnFood } = useFood({ initialFoodState });
+	const { food, getFood, removeFood, spawnFood } = useFood({ initialFoodState });
+
+	const getSnakeCells = () => allSnakeCells();
 
 	// Don't keep direction of the snakes inside of useState()...
-	const { snakes, updateSnake, removeSnake, resetSnake } = useSnakes({
+	const {
+		snakes,
+		updateSnake,
+		removeSnake,
+		resetSnake,
+		getSnakeCells: allSnakeCells,
+	} = useSnakes({
 		initialSnakesState,
 		getDirection,
-		food,
+		getFood,
 		removeFood,
 		setDirection,
 	});
 
-	useTicks({ updateSnake, snakes, food, spawnFood });
+	useTicks({ updateSnake, snakes, food, spawnFood, getSnakeCells });
 
 	return (
 		<div className={styles.game}>

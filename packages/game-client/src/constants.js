@@ -34,7 +34,7 @@ const TICK_TYPES = {
 
 const TICKS = {
 	[TICK_TYPES.FOOD]: {
-		0.1: 1000 * 0.1,
+		0.1: 1000 * 0.005,
 	},
 	[TICK_TYPES.SNAKES]: {
 		// 1: 1 * 1000,
