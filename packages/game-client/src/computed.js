@@ -72,4 +72,6 @@ const initialSnakesState = {
 	// },
 };
 
-export { GRID_MAP, initialSnakesState };
+const initialFoodState = {};
+
+export { GRID_MAP, initialSnakesState, initialFoodState };

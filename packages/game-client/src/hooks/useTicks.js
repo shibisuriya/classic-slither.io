@@ -1,18 +1,42 @@
-import React, { useEffect } from 'react';
-import { TICKS } from '../constants';
+import React, { useEffect, useRef } from 'react';
+import { TICKS, TICK_TYPES } from '../constants';
 
-const useTicks = () => {
+const useTicks = ({ updateSnake, snakes, food, spawnFood }) => {
+	const timersRef = useRef([]);
+	const snakesRef = useRef(snakes);
+	const foodRef = useRef(food);
+
 	useEffect(() => {
-		const timers = [];
-		for (const [key, value] of Object.entries(TICKS)) {
-			const timer = setInterval(() => {
-				console.log(key, ' -> ', Date.now());
-			}, value);
-			timers.push(timer);
+		snakesRef.current = snakes;
+		foodRef.current = food;
+	}, [snakes, food]);
+
+	useEffect(() => {
+		for (const [type, ticks] of Object.entries(TICKS)) {
+			let timer;
+			for (const tick of Object.values(ticks)) {
+				if (type == TICK_TYPES.SNAKES) {
+					timer = setInterval(() => {
+						updateSnake({
+							food: foodRef.current,
+							snakes: snakesRef.current,
+						});
+					}, tick);
+				} else if (type == TICK_TYPES.FOOD) {
+					timer = setInterval(() => {
+						spawnFood({
+							snakes: snakesRef.current,
+						});
+					}, tick);
+				}
+				timersRef.current.push(timer);
+			}
 		}
 
 		return () => {
-			timers.forEach((timer) => clearInterval(timer));
+			for (const timer of timersRef.current) {
+				clearInterval(timer);
+			}
 		};
 	}, []);
 };

@@ -33,6 +33,15 @@ export const getOppositeDirection = (direction) => {
 	}
 };
 
+export const getSnakeCellsAsHash = (snakes) => {
+	// return cells that are occupied by snakes.
+	return Object.values(snakes).reduce((hash, snake) => {
+		// TODO: check if the data is consistent here.
+		Object.assign(hash, snake.hash);
+		return hash;
+	}, {});
+};
+
 export const generateRandomNumber = (max, min = 0) => {
 	const randomDecimal = Math.random();
 	const randomInRange = randomDecimal * (max - min) + min;

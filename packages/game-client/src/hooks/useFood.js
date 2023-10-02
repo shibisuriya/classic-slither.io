@@ -1,8 +1,26 @@
-import { useState } from 'react';
-import { generateKey, generateValue } from '../utils';
+import React, { useState, useEffect } from 'react';
+import { generateKey, generateValue, generateRandomNumber, getSnakeCellsAsHash } from '../utils';
+import { GRID_MAP } from '../computed';
 
-const useFood = (initialState = {}) => {
-	const [map, setMap] = useState(initialState);
+const useFood = ({ initialFoodState = {} }) => {
+	const [map, setMap] = useState(initialFoodState);
+
+	const spawnFood = ({ snakes }) => {
+		const snakeCells = getSnakeCellsAsHash(snakes);
+		const emptyCells = {};
+
+		for (const [key, value] of Object.entries(GRID_MAP)) {
+			if (!(key in snakeCells) && !(key in map)) {
+				Object.assign(emptyCells, { [key]: value });
+			}
+		}
+		const keys = Object.keys(emptyCells);
+		if (keys.length > 0) {
+			const randomEmptyCell = emptyCells[keys[generateRandomNumber(keys.length)]];
+			const { x, y } = randomEmptyCell;
+			setFood(x, y);
+		}
+	};
 
 	const setFood = (x, y) => {
 		setMap((prevMap) => {
@@ -31,7 +49,7 @@ const useFood = (initialState = {}) => {
 		return key in map;
 	};
 
-	return { food: map, setFood, removeFood, isFood };
+	return { food: map, setFood, removeFood, isFood, spawnFood };
 };
 
 export { useFood };

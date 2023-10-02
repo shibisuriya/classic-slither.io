@@ -1,8 +1,46 @@
 import React, { useRef } from 'react';
 import { DIRECTIONS } from '../constants';
+import { getOppositeDirection } from '../utils';
 
-const useDirection = (initialState) => {
+const useDirection = (initialState, snakeId) => {
 	const directions = useRef({ ...initialState }); // useRef is changing the supplied object :(
+
+	const onUp = () => {
+		const direction = getDirection(snakeId);
+		if (direction == DIRECTIONS.UP) {
+			// moving up only.
+			return;
+		} else if (getOppositeDirection(direction) !== DIRECTIONS.UP) {
+			setDirection(snakeId, DIRECTIONS.UP);
+		}
+	};
+
+	const onDown = () => {
+		const direction = getDirection(snakeId);
+		if (direction == DIRECTIONS.DOWN) {
+			return;
+		} else if (getOppositeDirection(direction) !== DIRECTIONS.DOWN) {
+			setDirection(snakeId, DIRECTIONS.DOWN);
+		}
+	};
+
+	const onRight = () => {
+		const direction = getDirection(snakeId);
+		if (direction == DIRECTIONS.RIGHT) {
+			return;
+		} else if (getOppositeDirection(direction) !== DIRECTIONS.RIGHT) {
+			setDirection(snakeId, DIRECTIONS.RIGHT);
+		}
+	};
+
+	const onLeft = () => {
+		const direction = getDirection(snakeId);
+		if (direction == DIRECTIONS.LEFT) {
+			return;
+		} else if (getOppositeDirection(direction) !== DIRECTIONS.LEFT) {
+			setDirection(snakeId, DIRECTIONS.LEFT);
+		}
+	};
 
 	const setDirection = (snakeId, direction) => {
 		directions.current[snakeId] = direction;
@@ -12,28 +50,12 @@ const useDirection = (initialState) => {
 		return directions.current[snakeId];
 	};
 
-	const setUp = (snakeId) => {
-		setDirection(snakeId, DIRECTIONS.UP);
-	};
-
-	const setDown = (snakeId) => {
-		setDirection(snakeId, DIRECTIONS.DOWN);
-	};
-
-	const setRight = (snakeId) => {
-		setDirection(snakeId, DIRECTIONS.RIGHT);
-	};
-
-	const setLeft = (snakeId) => {
-		setDirection(snakeId, DIRECTIONS.LEFT);
-	};
-
 	return {
 		directions: directions.current,
-		setDown,
-		setUp,
-		setLeft,
-		setRight,
+		onUp,
+		onDown,
+		onLeft,
+		onRight,
 		getDirection,
 		setDirection,
 	};

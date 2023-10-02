@@ -7,9 +7,12 @@
 	position: absolute;
 }
 
+:global(*) {
+	outline: 1px solid black !important;
+}
+
 .food {
 	box-sizing: border-box;
-	padding: 1px;
 	border: 1px solid black;
 }
 
