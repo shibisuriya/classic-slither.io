@@ -48,7 +48,7 @@ function Grid({ snakes, food }) {
 			})}
 			{Object.entries(food).map(([key, value]) => {
 				const { x, y, type } = value;
-				return <Food x={x} y={y} key={key} type={type.name} />;
+				return <Food x={x} y={y} key={key} type={type} />;
 			})}
 		</div>
 	);

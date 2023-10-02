@@ -24,10 +24,10 @@ const DIRECTIONS = {
 const DEFAULT_DIRECTION = DIRECTIONS.RIGHT;
 
 const FOOD_TYPES = {
-	PROTEIN: { name: 'protein', chance: 95, growth: 1 },
-	WALLRIDER_PORTION: { name: 'wallrider-portion', chance: 2, growth: 0 },
-	REDBULL: { name: 'redbull', chance: 3, growth: 0 },
-	FILLET: { name: 'fillet', chance: 0, growth: 2 },
+	PROTEIN: { TYPE: 'protein', chance: 95, growth: 1 },
+	WALLRIDER_PORTION: { TYPE: 'wallrider-portion', chance: 2, growth: 0 },
+	REDBULL: { TYPE: 'redbull', chance: 3, growth: 0 },
+	FILLET: { TYPE: 'fillet', chance: 0, growth: 2 },
 };
 
 const TICK_TYPES = {

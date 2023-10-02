@@ -20,6 +20,8 @@ const whichFoodToSpawn = () => {
 			return FOOD_TYPES[key];
 		}
 	}
+	// TODO: There is something wrong with this function, returning undefined sometimes.
+	return FOOD_TYPES.PROTEIN;
 };
 
 const useFood = ({ initialFoodState = {}, getSnakes }) => {
@@ -43,13 +45,13 @@ const useFood = ({ initialFoodState = {}, getSnakes }) => {
 		if (keys.length > 0) {
 			const randomEmptyCell = emptyCells[keys[generateRandomNumber(keys.length)]];
 			const { x, y } = randomEmptyCell;
-			setFood(x, y, whichFoodToSpawn());
+			setFood(x, y, whichFoodToSpawn().TYPE);
 		} else {
 			console.warn('Map full!');
 		}
 	};
 
-	const setFood = (x, y, type = FOOD_TYPES.PROTEIN) => {
+	const setFood = (x, y, type = FOOD_TYPES.PROTEIN.TYPE) => {
 		const key = generateKey(x, y);
 		if (key in mapRef.current) {
 			throw new Error('The cell you supplied is already a food.');
@@ -64,8 +66,10 @@ const useFood = ({ initialFoodState = {}, getSnakes }) => {
 		if (!(key in mapRef.current)) {
 			throw new Error('The cell you supplied is not a food.');
 		} else {
+			const removedFood = cloneDeep(mapRef.current[key]);
 			delete mapRef.current[key];
 			setMap(mapRef.current);
+			return removedFood;
 		}
 	};
 

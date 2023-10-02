@@ -46,7 +46,7 @@ const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setD
 		Object.values(removedSnake.hash).forEach((cells, index) => {
 			if (index % 2 === 0) {
 				const { x, y } = cells;
-				setFood(x, y, FOOD_TYPES.FILLET);
+				setFood(x, y, FOOD_TYPES.FILLET.TYPE);
 			}
 		});
 	};
@@ -100,8 +100,25 @@ const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setD
 
 			// Remove tail.
 			if (newHeadKey in getFood()) {
-				removeFood(newHead.x, newHead.y);
-				updateSnake(snakeId, { hash: updatedHash, list: updatedList });
+				// TODO: refactor...
+				const removedFood = removeFood(newHead.x, newHead.y);
+				switch (removedFood.type) {
+					case FOOD_TYPES.PROTEIN.TYPE:
+						updateSnake(snakeId, { hash: updatedHash, list: updatedList });
+						break;
+
+					case FOOD_TYPES.FILLET.TYPE:
+						updateSnake(snakeId, { hash: updatedHash, list: updatedList });
+						break;
+
+					case FOOD_TYPES.WALLRIDER_PORTION.TYPE:
+						updateSnake(snakeId, { hash: updatedHash, list: updatedList });
+						break;
+
+					case FOOD_TYPES.REDBULL.TYPE:
+						updateSnake(snakeId, { hash: updatedHash, list: updatedList });
+						break;
+				}
 			} else if (newHeadKey in snakesRef.current[snakeId].hash) {
 				// Snake collided with itself.
 				convertSnakeToFood(snakeId);
