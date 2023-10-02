@@ -6,19 +6,19 @@ import { useDirection, useFood, useTicks, useSnakes, useInput, useSocket } from 
 import Grid from './Grid';
 import styles from './app.module.css';
 
-function App() {
-	const [mounted, setMounted] = useState(true);
-	return (
-		<div>
-			<div>
-				<button onClick={() => setMounted((prev) => !prev)}>Mount / Unmount</button>
-			</div>
-			<div>{mounted && <Game />}</div>
-		</div>
-	);
-}
+// function App() {
+// 	const [mounted, setMounted] = useState(true);
+// 	return (
+// 		<div>
+// 			<div>
+// 				<button onClick={() => setMounted((prev) => !prev)}>Mount / Unmount</button>
+// 			</div>
+// 			<div>{mounted && <Game />}</div>
+// 		</div>
+// 	);
+// }
 
-function Game() {
+function App() {
 	const [snakeId, setSnakeId] = useState(1);
 
 	// Keep the direction of the snakes inside useRef since we don't
@@ -28,7 +28,7 @@ function Game() {
 
 	useInput({ snakes, onUp, onDown, onLeft, onRight, snakeId });
 
-	const { food, getFood, removeFood, spawnFood } = useFood({ initialFoodState });
+	const { food, getFood, removeFood, spawnFood, isFood } = useFood({ initialFoodState });
 
 	const getSnakeCells = () => allSnakeCells();
 
@@ -45,19 +45,20 @@ function Game() {
 		getFood,
 		removeFood,
 		setDirection,
+		isFood,
 	});
 
 	useTicks({ updateSnake, snakes, food, spawnFood, getSnakeCells });
 
 	return (
 		<div className={styles.game}>
-			<select value={snakeId} onChange={(e) => setSnakeId(e.target.value)}>
+			{/* <select value={snakeId} onChange={(e) => setSnakeId(e.target.value)}>
 				{Object.keys(snakes).map((snakeId, index) => (
 					<option value={snakeId} key={index}>
 						{snakeId}
 					</option>
 				))}
-			</select>
+			</select> */}
 			<Grid snakes={snakes} food={food} />
 		</div>
 	);

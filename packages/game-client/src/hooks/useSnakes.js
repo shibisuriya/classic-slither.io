@@ -3,7 +3,7 @@ import { generateKey } from '../utils';
 import cloneDeep from 'lodash/cloneDeep';
 import { DIRECTIONS, NUMBER_OF_ROWS, NUMBER_OF_COLUMNS, defaultDirections } from '../constants';
 
-const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setDirection }) => {
+const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setDirection, isFood }) => {
 	const [snakes, setSnakes] = useState(initialSnakesState);
 	const snakesRef = useRef(snakes);
 
@@ -31,6 +31,12 @@ const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setD
 		setDirection(snakeId, defaultDirections[snakeId]); // Set to the default initial direction.
 		snakesRef.current = { ...snakesRef.current, [snakeId]: initialSnakesState[snakeId] };
 		setSnakes(snakesRef.current);
+		for (const snakeCell of Object.values(snakesRef.current[snakeId].hash)) {
+			const { x, y } = snakeCell;
+			if (isFood(x, y)) {
+				removeFood(x, y);
+			}
+		}
 	};
 
 	const updateSnake = () => {
