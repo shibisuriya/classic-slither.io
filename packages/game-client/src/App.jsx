@@ -35,9 +35,7 @@ function App() {
 	// Don't keep direction of the snakes inside of useState()...
 	const {
 		snakes,
-		updateSnake,
-		removeSnake,
-		resetSnake,
+		moveForward,
 		getSnakeCells: allSnakeCells,
 	} = useSnakes({
 		initialSnakesState,
@@ -48,7 +46,7 @@ function App() {
 		isFood,
 	});
 
-	useTicks({ updateSnake, snakes, food, spawnFood, getSnakeCells });
+	useTicks({ moveForward, snakes, food, spawnFood, getSnakeCells });
 
 	return (
 		<div className={styles.game}>

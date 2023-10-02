@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { TICKS, TICK_TYPES } from '../constants';
 
-const useTicks = ({ updateSnake, snakes, food, spawnFood, getSnakeCells }) => {
+const useTicks = ({ moveForward, snakes, food, spawnFood, getSnakeCells }) => {
 	const timersRef = useRef([]);
 	const snakesRef = useRef(snakes);
 	const foodRef = useRef(food);
@@ -17,7 +17,7 @@ const useTicks = ({ updateSnake, snakes, food, spawnFood, getSnakeCells }) => {
 			for (const tick of Object.values(ticks)) {
 				if (type == TICK_TYPES.SNAKES) {
 					timer = setInterval(() => {
-						updateSnake();
+						moveForward();
 					}, tick);
 				} else if (type == TICK_TYPES.FOOD) {
 					timer = setInterval(() => {

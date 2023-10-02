@@ -22,13 +22,21 @@ const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setD
 		);
 	};
 
+	const updateSnake = (snakeId, snakeData) => {
+		snakesRef.current = {
+			...snakesRef.current,
+			[snakeId]: { ...snakesRef.current[snakeId], ...snakeData },
+		};
+		setSnakes(snakesRef.current);
+	};
+
 	const getSnakes = () => {
 		return cloneDeep(snakesRef.current);
 	};
 
 	const removeSnake = (snakeId) => {
 		delete snakesRef.current[snakeId];
-		return snakesRef.current;
+		setSnakes(snakesRef.current);
 	};
 
 	const resetSnake = (snakeId) => {
@@ -43,8 +51,7 @@ const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setD
 		}
 	};
 
-	const updateSnake = () => {
-		const snakeId = 1;
+	const moveForward = (snakeId = 1) => {
 		if (snakeId in snakesRef.current) {
 			const updatedHash = { ...snakesRef.current[snakeId].hash };
 			const updatedList = [...snakesRef.current[snakeId].list];
@@ -82,11 +89,7 @@ const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setD
 			// Remove tail.
 			if (newHeadKey in getFood()) {
 				removeFood(newHead.x, newHead.y);
-				snakesRef.current = {
-					...snakesRef.current,
-					[snakeId]: { ...snakesRef.current[snakeId], hash: updatedHash, list: updatedList },
-				};
-				setSnakes(snakesRef.current);
+				updateSnake(snakeId, { hash: updatedHash, list: updatedList });
 			} else if (newHeadKey in snakesRef.current[snakeId].hash) {
 				// Snake collided with itself.
 				resetSnake(snakeId);
@@ -99,11 +102,7 @@ const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setD
 				// Snake moved.
 				const tailKey = updatedList.pop(); // mutates.
 				delete updatedHash[tailKey];
-				snakesRef.current = {
-					...snakesRef.current,
-					[snakeId]: { ...snakesRef.current[snakeId], hash: updatedHash, list: updatedList },
-				};
-				setSnakes(snakesRef.current);
+				updateSnake(snakeId, { hash: updatedHash, list: updatedList });
 			} else {
 				// Snake collided with the wall...
 				resetSnake(snakeId);
@@ -113,7 +112,7 @@ const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setD
 		}
 	};
 
-	return { snakes, updateSnake, removeSnake, resetSnake, getSnakes, getSnakeCells };
+	return { snakes, moveForward, removeSnake, resetSnake, getSnakes, getSnakeCells };
 };
 
 export { useSnakes };
