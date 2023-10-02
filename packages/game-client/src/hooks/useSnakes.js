@@ -11,7 +11,11 @@ const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setD
 		// return cells that are occupied by snakes.
 		return cloneDeep(
 			Object.values(snakesRef.current).reduce((hash, snake) => {
-				// TODO: check if the data is consistent here.
+				for (const key in snake.hash) {
+					if (key in hash) {
+						throw new Error('The snakes data is corrupt... ');
+					}
+				}
 				Object.assign(hash, snake.hash);
 				return hash;
 			}, {}),
