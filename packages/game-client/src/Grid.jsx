@@ -1,7 +1,6 @@
 import React from 'react';
 import styles from './grid.module.css';
 import { CELL_DIMENSION, GRID_HEIGHT, GRID_WIDTH } from './constants';
-import { FOOD_TYPES } from './constants';
 
 function Cell({ x, y, color }) {
 	return (
@@ -18,10 +17,10 @@ function Cell({ x, y, color }) {
 	);
 }
 
-function Food({ x, y, type = FOOD_TYPES.PROTEIN }) {
+function Food({ x, y, type }) {
 	return (
 		<div
-			className={`${styles.cell} ${styles.protein} ${styles.food}`}
+			className={`${styles.cell} ${styles.food} ${styles[type]}`}
 			style={{
 				top: `${x * CELL_DIMENSION}px`,
 				left: `${y * CELL_DIMENSION}px`,
@@ -48,8 +47,8 @@ function Grid({ snakes, food }) {
 				});
 			})}
 			{Object.entries(food).map(([key, value]) => {
-				const { x, y } = value;
-				return <Food x={x} y={y} key={key} />;
+				const { x, y, type } = value;
+				return <Food x={x} y={y} key={key} type={type.name} />;
 			})}
 		</div>
 	);

@@ -1,9 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { generateKey } from '../utils';
 import cloneDeep from 'lodash/cloneDeep';
-import { DIRECTIONS, NUMBER_OF_ROWS, NUMBER_OF_COLUMNS, defaultDirections } from '../constants';
+import { DIRECTIONS, NUMBER_OF_ROWS, NUMBER_OF_COLUMNS, defaultDirections, FOOD_TYPES } from '../constants';
 
-const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setDirection, isFood }) => {
+const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setDirection, isFood, setFood }) => {
 	const [snakes, setSnakes] = useState(initialSnakesState);
 	const snakesRef = useRef(snakes);
 
@@ -27,7 +27,7 @@ const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setD
 			...snakesRef.current,
 			[snakeId]: { ...snakesRef.current[snakeId], ...snakeData },
 		};
-		setSnakes(snakesRef.current);
+		setSnakes({ ...snakesRef.current });
 	};
 
 	const getSnakes = () => {
@@ -35,14 +35,26 @@ const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setD
 	};
 
 	const removeSnake = (snakeId) => {
+		const removedSnake = cloneDeep(snakesRef.current[snakeId]);
 		delete snakesRef.current[snakeId];
-		setSnakes(snakesRef.current);
+		setSnakes({ ...snakesRef.current });
+		return removedSnake;
+	};
+
+	const convertSnakeToFood = (snakeId) => {
+		const removedSnake = removeSnake(snakeId);
+		Object.values(removedSnake.hash).forEach((cells, index) => {
+			if (index % 2 === 0) {
+				const { x, y } = cells;
+				setFood(x, y, FOOD_TYPES.FILLET);
+			}
+		});
 	};
 
 	const resetSnake = (snakeId) => {
 		setDirection(snakeId, defaultDirections[snakeId]); // Set to the default initial direction.
 		snakesRef.current = { ...snakesRef.current, [snakeId]: initialSnakesState[snakeId] };
-		setSnakes(snakesRef.current);
+		setSnakes({ ...snakesRef.current });
 		for (const snakeCell of Object.values(snakesRef.current[snakeId].hash)) {
 			const { x, y } = snakeCell;
 			if (isFood(x, y)) {
@@ -92,7 +104,7 @@ const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setD
 				updateSnake(snakeId, { hash: updatedHash, list: updatedList });
 			} else if (newHeadKey in snakesRef.current[snakeId].hash) {
 				// Snake collided with itself.
-				resetSnake(snakeId);
+				convertSnakeToFood(snakeId);
 			} else if (
 				newHead.x < NUMBER_OF_ROWS &&
 				newHead.x >= 0 &&
@@ -105,11 +117,12 @@ const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setD
 				updateSnake(snakeId, { hash: updatedHash, list: updatedList });
 			} else {
 				// Snake collided with the wall...
-				resetSnake(snakeId);
+				convertSnakeToFood(snakeId);
 			}
-		} else {
-			throw new Error('The id mentioned is not in the hash!');
 		}
+		// else {
+		// 	throw new Error('The id mentioned is not in the hash!');
+		// }
 	};
 
 	return { snakes, moveForward, removeSnake, resetSnake, getSnakes, getSnakeCells };

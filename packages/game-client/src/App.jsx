@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { generateRandomNumber } from './utils';
-import { DIRECTIONS, defaultDirections } from './constants';
+import React, { useState } from 'react';
+import { defaultDirections } from './constants';
 import { initialSnakesState, initialFoodState } from './computed';
 import { useDirection, useFood, useTicks, useSnakes, useInput, useSocket } from './hooks';
 import Grid from './Grid';
@@ -28,7 +27,7 @@ function App() {
 
 	useInput({ snakes, onUp, onDown, onLeft, onRight, snakeId });
 
-	const { food, getFood, removeFood, spawnFood, isFood } = useFood({ initialFoodState });
+	const { food, getFood, removeFood, spawnFood, isFood, setFood } = useFood({ initialFoodState });
 
 	const getSnakeCells = () => allSnakeCells();
 
@@ -44,6 +43,7 @@ function App() {
 		removeFood,
 		setDirection,
 		isFood,
+		setFood,
 	});
 
 	useTicks({ moveForward, snakes, food, spawnFood, getSnakeCells });

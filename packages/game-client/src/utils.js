@@ -1,6 +1,6 @@
 import { NUMBER_OF_COLUMNS, NUMBER_OF_ROWS, DIRECTIONS } from './constants';
 
-const isCellValid = (i, j) => {
+export const isCellValid = (i, j) => {
 	return !(i > NUMBER_OF_ROWS || j > NUMBER_OF_COLUMNS);
 };
 

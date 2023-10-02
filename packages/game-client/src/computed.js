@@ -1,4 +1,4 @@
-import { NUMBER_OF_COLUMNS, NUMBER_OF_ROWS, DIRECTIONS } from './constants';
+import { NUMBER_OF_COLUMNS, NUMBER_OF_ROWS } from './constants';
 import { generateKey, generateValue } from './utils';
 
 const generateGridMap = () => {
