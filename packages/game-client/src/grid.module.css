@@ -32,6 +32,14 @@
 	background-color: #d62828;
 }
 
+.food.wallrider-portion {
+	background-color: cyan;
+}
+
+.food.redbull {
+	background-color: blue;
+}
+
 @-webkit-keyframes scale-in-center {
 	0% {
 		-webkit-transform: scale(0);

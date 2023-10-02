@@ -24,9 +24,9 @@ const DIRECTIONS = {
 const DEFAULT_DIRECTION = DIRECTIONS.RIGHT;
 
 const FOOD_TYPES = {
-	PROTEIN: { name: 'protein', chance: 85, growth: 1 },
-	REDBULL: { name: 'redbull', chance: 5, growth: 0 },
-	WALLRIDER_PORTION: { name: 'wallrider_portion', chance: 10, growth: 0 },
+	PROTEIN: { name: 'protein', chance: 95, growth: 1 },
+	WALLRIDER_PORTION: { name: 'wallrider-portion', chance: 2, growth: 0 },
+	REDBULL: { name: 'redbull', chance: 3, growth: 0 },
 	FILLET: { name: 'fillet', chance: 0, growth: 2 },
 };
 

@@ -4,6 +4,24 @@ import { GRID_MAP } from '../computed';
 import cloneDeep from 'lodash/cloneDeep';
 import { FOOD_TYPES } from '../constants';
 
+const whichFoodToSpawn = () => {
+	const percentage = Object.values(FOOD_TYPES).reduce((total, { chance }) => {
+		total += chance;
+		return total;
+	}, 0);
+	if (percentage != 100) {
+		throw new Error('The sum of all chances should be 100.');
+	}
+	const randomNumber = generateRandomNumber(100) + 1; // Since it will generate a random number between 0 to 99, 100 is not included, I added 1.
+	let cumulativeChance = 0;
+	for (const key in FOOD_TYPES) {
+		cumulativeChance += FOOD_TYPES[key].chance;
+		if (randomNumber < cumulativeChance) {
+			return FOOD_TYPES[key];
+		}
+	}
+};
+
 const useFood = ({ initialFoodState = {}, getSnakes }) => {
 	const [map, setMap] = useState(initialFoodState);
 	const mapRef = useRef(map);
@@ -25,7 +43,7 @@ const useFood = ({ initialFoodState = {}, getSnakes }) => {
 		if (keys.length > 0) {
 			const randomEmptyCell = emptyCells[keys[generateRandomNumber(keys.length)]];
 			const { x, y } = randomEmptyCell;
-			setFood(x, y, FOOD_TYPES.PROTEIN);
+			setFood(x, y, whichFoodToSpawn());
 		} else {
 			console.warn('Map full!');
 		}
