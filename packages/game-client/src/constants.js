@@ -29,6 +29,7 @@ const SNAKE_TICKS = {
 	ONE: { TYPE: 'ONE', DURATION: 1 * 1000 },
 	HALF: { TYPE: 'HALF', DURATION: 0.5 * 1000 },
 	QUARTER: { TYPE: 'QUARTER', DURATION: 0.25 * 1000 },
+	TWO_TENTH: { TYPE: 'TWO_TENTH', DURATION: 0.2 * 1000 },
 	ONE_TENTH: {
 		TYPE: 'ONE_TENTH',
 		DURATION: 1000 * 0.1,
@@ -46,12 +47,12 @@ const FOOD_TICKS = {
 // if they are unique.
 areValuesUnique(SNAKE_TICKS);
 
-const DEFAULT_TRACK = SNAKE_TICKS.ONE_TENTH.TYPE;
+const DEFAULT_TRACK = SNAKE_TICKS.QUARTER.TYPE;
 
 const FOOD_TYPES = {
 	PROTEIN: { TYPE: 'PROTEIN', chance: 95, growth: 1 },
 	WALLRIDER_PORTION: { TYPE: 'WALLRIDER_PORTION', chance: 2, growth: 0 },
-	REDBULL: { TYPE: 'REDBULL', chance: 3, growth: 0, speed: SNAKE_TICKS.ONE.TYPE },
+	REDBULL: { TYPE: 'REDBULL', chance: 3, growth: 0, speed: SNAKE_TICKS.ONE_TENTH.TYPE },
 	FILLET: { TYPE: 'FILLET', chance: 0, growth: 2 },
 };
 

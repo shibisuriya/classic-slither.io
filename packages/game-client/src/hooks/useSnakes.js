@@ -18,7 +18,7 @@ const useSnakes = ({
 
 	const getAllSnakeIds = () => {
 		const allSnakeIds = Object.keys(snakesRef.current).reduce((hash, snake) => {
-			hash[snake] = snake;
+			hash[snake] = {};
 			return hash;
 		}, {});
 		return allSnakeIds;
