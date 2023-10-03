@@ -1,5 +1,5 @@
 import { NUMBER_OF_COLUMNS, NUMBER_OF_ROWS } from './constants';
-import { generateKey, generateValue } from './utils';
+import { generateKey, generateValue } from './helpers';
 
 const generateGridMap = () => {
 	const hash = {};

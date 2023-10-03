@@ -1,15 +1,39 @@
 import React, { useEffect, useRef } from 'react';
-import { TICKS, TICK_TYPES } from '../constants';
+import { TICKS, TICK_TYPES, DEFAULT_TRACK } from '../constants';
 
-const useTicks = ({ moveForward, snakes, food, spawnFood, getSnakeCells }) => {
+const useTicks = ({ moveForward, spawnFood, getSnakeCells, getAllSnakeIds }) => {
 	const timersRef = useRef([]);
-	const snakesRef = useRef(snakes);
-	const foodRef = useRef(food);
+	const trackRef = useRef(
+		Object.keys(TICKS[TICK_TYPES.SNAKES]).reduce((tracks, tick) => {
+			if (tick == DEFAULT_TRACK) {
+				tracks[tick] = getAllSnakeIds();
+			} else {
+				tracks[tick] = {};
+			}
+			return tracks;
+		}, {}),
+	);
 
-	useEffect(() => {
-		snakesRef.current = snakes;
-		foodRef.current = food;
-	}, [snakes, food]);
+	// To manage the speed of the snakes we use the concept of a
+	// railway track... There are n number of tracks, the rail on
+	// each track has different speeds. So to increase or decrease a
+	// snakes speed, we have push that particular snake to the
+	// appropriate track.
+
+	const addSnakeToTrack = (trackId, snakeId) => {
+		// Remove the snake from the existing track.
+		// Move the snake to the new track.
+		// trackRef.current[];
+	};
+
+	const resetSnakeTrack = (snakeId) => {
+		// Removes the snake from a particular track
+		// and places it in the default track.
+	};
+
+	const removeSnakeFromTracks = (snakeId) => {
+		// Removes the snake from all the tracks, used when a particular the snake dies.
+	};
 
 	useEffect(() => {
 		for (const [type, ticks] of Object.entries(TICKS)) {
@@ -34,6 +58,8 @@ const useTicks = ({ moveForward, snakes, food, spawnFood, getSnakeCells }) => {
 			}
 		};
 	}, []);
+
+	return { addSnakeToTrack, removeSnakeFromTracks, resetSnakeTrack };
 };
 
 export { useTicks };

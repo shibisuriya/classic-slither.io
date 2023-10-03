@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { DIRECTIONS } from '../constants';
-import { getOppositeDirection } from '../utils';
+import { getOppositeDirection } from '../helpers';
 
 const useDirection = (initialState, snakeId) => {
 	const directions = useRef({ ...initialState }); // useRef is changing the supplied object :(

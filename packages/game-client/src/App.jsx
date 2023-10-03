@@ -36,6 +36,7 @@ function App() {
 		snakes,
 		moveForward,
 		getSnakeCells: allSnakeCells,
+		getAllSnakeIds,
 	} = useSnakes({
 		initialSnakesState,
 		getDirection,
@@ -46,7 +47,7 @@ function App() {
 		setFood,
 	});
 
-	useTicks({ moveForward, snakes, food, spawnFood, getSnakeCells });
+	useTicks({ moveForward, snakes, food, spawnFood, getSnakeCells, getAllSnakeIds });
 
 	return (
 		<div className={styles.game}>

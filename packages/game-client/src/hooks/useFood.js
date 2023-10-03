@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { generateKey, generateValue, generateRandomNumber, getSnakeCellsAsHash } from '../utils';
+import { generateRandomNumber } from '../utils';
+import { generateKey, generateValue } from '../helpers';
 import { GRID_MAP } from '../computed';
 import cloneDeep from 'lodash/cloneDeep';
 import { FOOD_TYPES } from '../constants';

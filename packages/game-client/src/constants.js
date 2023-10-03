@@ -1,3 +1,5 @@
+import { findKeyByValue, areValuesUnique } from './utils';
+
 // in px (pixels)
 const GRID_WIDTH = 30 * 50;
 const GRID_HEIGHT = 30 * 30;
@@ -23,13 +25,6 @@ const DIRECTIONS = {
 
 const DEFAULT_DIRECTION = DIRECTIONS.RIGHT;
 
-const FOOD_TYPES = {
-	PROTEIN: { TYPE: 'protein', chance: 95, growth: 1 },
-	WALLRIDER_PORTION: { TYPE: 'wallrider-portion', chance: 2, growth: 0 },
-	REDBULL: { TYPE: 'redbull', chance: 3, growth: 0 },
-	FILLET: { TYPE: 'fillet', chance: 0, growth: 2 },
-};
-
 const TICK_TYPES = {
 	SNAKES: 'snakes',
 	FOOD: 'food',
@@ -40,14 +35,23 @@ const TICKS = {
 		0.1: 1000 * 0.1,
 	},
 	[TICK_TYPES.SNAKES]: {
-		// 1: 1 * 1000,
-		// 0.5: 0.5 * 1000,
-		// 0.25: 0.25 * 1000,
-		0.1: 1000 * 0.1,
+		// ONE: 1 * 1000,
+		// HALF: 0.5 * 1000,
+		// QUARTER: 0.25 * 1000,
+		ONE_TENTH: 1000 * 0.1,
 	},
 };
 
-const SPEED = 1 * 100;
+areValuesUnique(TICKS[TICK_TYPES.SNAKES]);
+
+const DEFAULT_TRACK = findKeyByValue(TICKS[TICK_TYPES.SNAKES], TICKS[TICK_TYPES.SNAKES].ONE_TENTH);
+
+const FOOD_TYPES = {
+	PROTEIN: { TYPE: 'protein', chance: 95, growth: 1 },
+	WALLRIDER_PORTION: { TYPE: 'wallrider-portion', chance: 2, growth: 0 },
+	REDBULL: { TYPE: 'redbull', chance: 3, growth: 0, speed: TICKS[TICK_TYPES.SNAKES].QUARTER },
+	FILLET: { TYPE: 'fillet', chance: 0, growth: 2 },
+};
 
 const defaultDirections = {
 	1: DIRECTIONS.DOWN,
@@ -68,5 +72,5 @@ export {
 	FOOD_TYPES,
 	TICKS,
 	TICK_TYPES,
-	SPEED,
+	DEFAULT_TRACK,
 };
