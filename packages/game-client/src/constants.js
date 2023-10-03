@@ -1,3 +1,5 @@
+import { findKeyByValue, areValuesUnique } from './utils';
+
 // in px (pixels)
 const GRID_WIDTH = 30 * 50;
 const GRID_HEIGHT = 30 * 30;
@@ -23,31 +25,36 @@ const DIRECTIONS = {
 
 const DEFAULT_DIRECTION = DIRECTIONS.RIGHT;
 
+const SNAKE_TICKS = {
+	ONE: { TYPE: 'ONE', DURATION: 1 * 1000 },
+	HALF: { TYPE: 'HALF', DURATION: 0.5 * 1000 },
+	QUARTER: { TYPE: 'QUARTER', DURATION: 0.25 * 1000 },
+	TWO_TENTH: { TYPE: 'TWO_TENTH', DURATION: 0.2 * 1000 },
+	ONE_TENTH: {
+		TYPE: 'ONE_TENTH',
+		DURATION: 1000 * 0.1,
+	},
+};
+
+const FOOD_TICKS = {
+	ONE_TENTH: {
+		TYPE: 'ONE_TENTH',
+		DURATION: 1000 * 0.1,
+	},
+};
+
+// Two setInterval shouldn't have the same duration, so check
+// if they are unique.
+areValuesUnique(SNAKE_TICKS);
+
+const DEFAULT_TRACK = SNAKE_TICKS.QUARTER.TYPE;
+
 const FOOD_TYPES = {
-	PROTEIN: { TYPE: 'protein', chance: 95, growth: 1 },
-	WALLRIDER_PORTION: { TYPE: 'wallrider-portion', chance: 2, growth: 0 },
-	REDBULL: { TYPE: 'redbull', chance: 3, growth: 0 },
-	FILLET: { TYPE: 'fillet', chance: 0, growth: 2 },
+	PROTEIN: { TYPE: 'PROTEIN', chance: 95, growth: 1 },
+	WALLRIDER_PORTION: { TYPE: 'WALLRIDER_PORTION', chance: 2, growth: 0 },
+	REDBULL: { TYPE: 'REDBULL', chance: 3, growth: 0, speed: SNAKE_TICKS.ONE_TENTH.TYPE },
+	FILLET: { TYPE: 'FILLET', chance: 0, growth: 2 },
 };
-
-const TICK_TYPES = {
-	SNAKES: 'snakes',
-	FOOD: 'food',
-};
-
-const TICKS = {
-	[TICK_TYPES.FOOD]: {
-		0.1: 1000 * 0.1,
-	},
-	[TICK_TYPES.SNAKES]: {
-		// 1: 1 * 1000,
-		// 0.5: 0.5 * 1000,
-		// 0.25: 0.25 * 1000,
-		0.1: 1000 * 0.1,
-	},
-};
-
-const SPEED = 1 * 100;
 
 const defaultDirections = {
 	1: DIRECTIONS.DOWN,
@@ -66,7 +73,7 @@ export {
 	DIRECTIONS,
 	DEFAULT_DIRECTION,
 	FOOD_TYPES,
-	TICKS,
-	TICK_TYPES,
-	SPEED,
+	DEFAULT_TRACK,
+	SNAKE_TICKS,
+	FOOD_TICKS,
 };

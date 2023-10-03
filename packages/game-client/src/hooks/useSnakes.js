@@ -1,11 +1,28 @@
 import React, { useRef, useState } from 'react';
-import { generateKey } from '../utils';
+import { generateKey } from '../helpers';
 import cloneDeep from 'lodash/cloneDeep';
 import { DIRECTIONS, NUMBER_OF_ROWS, NUMBER_OF_COLUMNS, defaultDirections, FOOD_TYPES } from '../constants';
 
-const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setDirection, isFood, setFood }) => {
+const useSnakes = ({
+	initialSnakesState,
+	getDirection,
+	getFood,
+	removeFood,
+	setDirection,
+	isFood,
+	setFood,
+	getTracks,
+}) => {
 	const [snakes, setSnakes] = useState(initialSnakesState);
 	const snakesRef = useRef(snakes);
+
+	const getAllSnakeIds = () => {
+		const allSnakeIds = Object.keys(snakesRef.current).reduce((hash, snake) => {
+			hash[snake] = {};
+			return hash;
+		}, {});
+		return allSnakeIds;
+	};
 
 	const getSnakeCells = () => {
 		// return cells that are occupied by snakes.
@@ -63,7 +80,7 @@ const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setD
 		}
 	};
 
-	const moveForward = (snakeId = 1) => {
+	const moveForward = (snakeId) => {
 		if (snakeId in snakesRef.current) {
 			const updatedHash = { ...snakesRef.current[snakeId].hash };
 			const updatedList = [...snakesRef.current[snakeId].list];
@@ -102,6 +119,11 @@ const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setD
 			if (newHeadKey in getFood()) {
 				// TODO: refactor...
 				const removedFood = removeFood(newHead.x, newHead.y);
+				const { speed } = FOOD_TYPES[removedFood.type];
+				if (speed) {
+					const { addSnakeToTrack, removeSnakeFromTracks, resetSnakeTrack } = getTracks();
+					addSnakeToTrack(speed, snakeId);
+				}
 				switch (removedFood.type) {
 					case FOOD_TYPES.PROTEIN.TYPE:
 						updateSnake(snakeId, { hash: updatedHash, list: updatedList });
@@ -142,7 +164,7 @@ const useSnakes = ({ initialSnakesState, getDirection, getFood, removeFood, setD
 		// }
 	};
 
-	return { snakes, moveForward, removeSnake, resetSnake, getSnakes, getSnakeCells };
+	return { snakes, moveForward, removeSnake, resetSnake, getSnakes, getSnakeCells, getAllSnakeIds };
 };
 
 export { useSnakes };

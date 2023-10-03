@@ -27,15 +27,20 @@ function App() {
 
 	useInput({ snakes, onUp, onDown, onLeft, onRight, snakeId });
 
-	const { food, getFood, removeFood, spawnFood, isFood, setFood } = useFood({ initialFoodState });
-
 	const getSnakeCells = () => allSnakeCells();
+
+	const { food, getFood, removeFood, spawnFood, isFood, setFood } = useFood({ initialFoodState, getSnakeCells });
+
+	const getTracks = () => {
+		return { addSnakeToTrack, removeSnakeFromTracks, resetSnakeTrack };
+	};
 
 	// Don't keep direction of the snakes inside of useState()...
 	const {
 		snakes,
 		moveForward,
 		getSnakeCells: allSnakeCells,
+		getAllSnakeIds,
 	} = useSnakes({
 		initialSnakesState,
 		getDirection,
@@ -44,9 +49,14 @@ function App() {
 		setDirection,
 		isFood,
 		setFood,
+		getTracks,
 	});
 
-	useTicks({ moveForward, snakes, food, spawnFood, getSnakeCells });
+	const { addSnakeToTrack, removeSnakeFromTracks, resetSnakeTrack } = useTicks({
+		moveForward,
+		spawnFood,
+		getAllSnakeIds,
+	});
 
 	return (
 		<div className={styles.game}>
