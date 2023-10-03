@@ -1,3 +1,5 @@
+import isEqual from 'lodash/isEqual';
+
 const generateRandomNumber = (max, min = 0) => {
 	const randomDecimal = Math.random();
 	const randomInRange = randomDecimal * (max - min) + min;
@@ -14,7 +16,7 @@ const areValuesUnique = (obj) => {
 
 const findKeyByValue = (object, value) => {
 	for (const key in object) {
-		if (object[key] === value) {
+		if (isEqual(object[key], value)) {
 			return key;
 		}
 	}

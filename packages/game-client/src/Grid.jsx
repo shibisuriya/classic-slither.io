@@ -20,7 +20,7 @@ function Cell({ x, y, color }) {
 function Food({ x, y, type }) {
 	return (
 		<div
-			className={`${styles.cell} ${styles.food} ${styles[type]}`}
+			className={`${styles.cell} ${styles.food} ${styles[type.toLowerCase()]}`}
 			style={{
 				top: `${x * CELL_DIMENSION}px`,
 				left: `${y * CELL_DIMENSION}px`,

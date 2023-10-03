@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from 'react';
-import { TICKS, TICK_TYPES, DEFAULT_TRACK } from '../constants';
+import { SNAKE_TICKS, FOOD_TICKS, DEFAULT_TRACK } from '../constants';
 
 const useTicks = ({ moveForward, spawnFood, getSnakeCells, getAllSnakeIds }) => {
 	const timersRef = useRef([]);
 	const trackRef = useRef(
-		Object.keys(TICKS[TICK_TYPES.SNAKES]).reduce((tracks, tick) => {
+		Object.keys(SNAKE_TICKS).reduce((tracks, tick) => {
 			if (tick == DEFAULT_TRACK) {
 				tracks[tick] = getAllSnakeIds();
 			} else {
@@ -21,6 +21,8 @@ const useTicks = ({ moveForward, spawnFood, getSnakeCells, getAllSnakeIds }) => 
 	// appropriate track.
 
 	const addSnakeToTrack = (trackId, snakeId) => {
+		removeSnakeFromTracks(snakeId);
+
 		// Remove the snake from the existing track.
 		// Move the snake to the new track.
 		// trackRef.current[];
@@ -35,21 +37,38 @@ const useTicks = ({ moveForward, spawnFood, getSnakeCells, getAllSnakeIds }) => 
 		// Removes the snake from all the tracks, used when a particular the snake dies.
 	};
 
+	const onTick = (tick) => {
+		Object.values(trackRef.current[tick]).forEach((snakeId) => {
+			moveForward(snakeId);
+		});
+	};
+
+	// For food.
 	useEffect(() => {
-		for (const [type, ticks] of Object.entries(TICKS)) {
-			let timer;
-			for (const tick of Object.values(ticks)) {
-				if (type == TICK_TYPES.SNAKES) {
-					timer = setInterval(() => {
-						moveForward();
-					}, tick);
-				} else if (type == TICK_TYPES.FOOD) {
-					timer = setInterval(() => {
-						spawnFood(getSnakeCells);
-					}, tick);
-				}
-				timersRef.current.push(timer);
+		for (const { DURATION: duration } of Object.values(FOOD_TICKS)) {
+			const timer = setInterval(() => {
+				spawnFood(getSnakeCells);
+			}, duration);
+
+			timersRef.current.push(timer);
+		}
+
+		return () => {
+			for (const timer of timersRef.current) {
+				clearInterval(timer);
 			}
+		};
+	}, []);
+
+	// For snakes.
+	useEffect(() => {
+		for (const [key, value] of Object.entries(SNAKE_TICKS)) {
+			const { DURATION: duration } = value;
+			const timer = setInterval(() => {
+				onTick(key);
+			}, duration);
+
+			timersRef.current.push(timer);
 		}
 
 		return () => {

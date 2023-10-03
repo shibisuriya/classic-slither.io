@@ -25,7 +25,7 @@ const whichFoodToSpawn = () => {
 	return FOOD_TYPES.PROTEIN;
 };
 
-const useFood = ({ initialFoodState = {}, getSnakes }) => {
+const useFood = ({ initialFoodState = {}, getSnakeCells }) => {
 	const [map, setMap] = useState(initialFoodState);
 	const mapRef = useRef(map);
 
@@ -33,7 +33,7 @@ const useFood = ({ initialFoodState = {}, getSnakes }) => {
 		return cloneDeep(mapRef.current); // Prevents users from modifiying the data.
 	};
 
-	const spawnFood = (getSnakeCells) => {
+	const spawnFood = () => {
 		const snakeCells = getSnakeCells();
 		const emptyCells = {};
 
@@ -52,14 +52,17 @@ const useFood = ({ initialFoodState = {}, getSnakes }) => {
 		}
 	};
 
-	const setFood = (x, y, type = FOOD_TYPES.PROTEIN.TYPE) => {
+	const setFood = (x, y, type) => {
+		if (!type) {
+			throw new Error('Please mention the food type that needs to be added to the map!');
+		}
 		const key = generateKey(x, y);
 		if (key in mapRef.current) {
 			throw new Error('The cell you supplied is already a food.');
 		} else {
 			Object.assign(mapRef.current, { [key]: { ...generateValue(x, y), type } });
 		}
-		setMap(mapRef.current);
+		setMap({ ...mapRef.current });
 	};
 
 	const removeFood = (x, y) => {
@@ -69,7 +72,7 @@ const useFood = ({ initialFoodState = {}, getSnakes }) => {
 		} else {
 			const removedFood = cloneDeep(mapRef.current[key]);
 			delete mapRef.current[key];
-			setMap(mapRef.current);
+			setMap({ ...mapRef.current });
 			return removedFood;
 		}
 	};

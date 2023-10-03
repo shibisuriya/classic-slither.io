@@ -25,32 +25,34 @@ const DIRECTIONS = {
 
 const DEFAULT_DIRECTION = DIRECTIONS.RIGHT;
 
-const TICK_TYPES = {
-	SNAKES: 'snakes',
-	FOOD: 'food',
-};
-
-const TICKS = {
-	[TICK_TYPES.FOOD]: {
-		0.1: 1000 * 0.1,
-	},
-	[TICK_TYPES.SNAKES]: {
-		// ONE: 1 * 1000,
-		// HALF: 0.5 * 1000,
-		// QUARTER: 0.25 * 1000,
-		ONE_TENTH: 1000 * 0.1,
+const SNAKE_TICKS = {
+	ONE: { TYPE: 'ONE', DURATION: 1 * 1000 },
+	HALF: { TYPE: 'HALF', DURATION: 0.5 * 1000 },
+	QUARTER: { TYPE: 'QUARTER', DURATION: 0.25 * 1000 },
+	ONE_TENTH: {
+		TYPE: 'ONE_TENTH',
+		DURATION: 1000 * 0.1,
 	},
 };
 
-areValuesUnique(TICKS[TICK_TYPES.SNAKES]);
+const FOOD_TICKS = {
+	ONE_TENTH: {
+		TYPE: 'ONE_TENTH',
+		DURATION: 1000 * 0.1,
+	},
+};
 
-const DEFAULT_TRACK = findKeyByValue(TICKS[TICK_TYPES.SNAKES], TICKS[TICK_TYPES.SNAKES].ONE_TENTH);
+// Two setInterval shouldn't have the same duration, so check
+// if they are unique.
+areValuesUnique(SNAKE_TICKS);
+
+const DEFAULT_TRACK = SNAKE_TICKS.ONE_TENTH.TYPE;
 
 const FOOD_TYPES = {
-	PROTEIN: { TYPE: 'protein', chance: 95, growth: 1 },
-	WALLRIDER_PORTION: { TYPE: 'wallrider-portion', chance: 2, growth: 0 },
-	REDBULL: { TYPE: 'redbull', chance: 3, growth: 0, speed: TICKS[TICK_TYPES.SNAKES].QUARTER },
-	FILLET: { TYPE: 'fillet', chance: 0, growth: 2 },
+	PROTEIN: { TYPE: 'PROTEIN', chance: 95, growth: 1 },
+	WALLRIDER_PORTION: { TYPE: 'WALLRIDER_PORTION', chance: 2, growth: 0 },
+	REDBULL: { TYPE: 'REDBULL', chance: 3, growth: 0, speed: SNAKE_TICKS.ONE.TYPE },
+	FILLET: { TYPE: 'FILLET', chance: 0, growth: 2 },
 };
 
 const defaultDirections = {
@@ -70,7 +72,7 @@ export {
 	DIRECTIONS,
 	DEFAULT_DIRECTION,
 	FOOD_TYPES,
-	TICKS,
-	TICK_TYPES,
 	DEFAULT_TRACK,
+	SNAKE_TICKS,
+	FOOD_TICKS,
 };
