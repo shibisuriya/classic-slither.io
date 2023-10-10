@@ -57,7 +57,10 @@ const useSnakes = ({
 		Object.values(removedSnake.hash).forEach((cells, index) => {
 			if (index % 2 === 0) {
 				const { x, y } = cells;
-				setFood(x, y, FOOD_TYPES.FILLET.TYPE);
+				if (!(generateKey(x, y) in getSnakeCells())) {
+					// Can't spawn a food piece if there is already a snake there.
+					setFood(x, y, FOOD_TYPES.FILLET.TYPE);
+				}
 			}
 		});
 	};
