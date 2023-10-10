@@ -1,8 +1,8 @@
 import { findKeyByValue, areValuesUnique } from './utils';
 
 // in px (pixels)
-const GRID_WIDTH = 30 * 50;
-const GRID_HEIGHT = 30 * 30;
+const GRID_WIDTH = 30 * 30;
+const GRID_HEIGHT = 30 * 20;
 const CELL_DIMENSION = 30;
 
 if (GRID_HEIGHT % CELL_DIMENSION !== 0) {
@@ -49,16 +49,38 @@ areValuesUnique(SNAKE_TICKS);
 
 const DEFAULT_TRACK = SNAKE_TICKS.QUARTER.TYPE;
 
+const FOOD_EFFECTS = {
+	GROW: 'grow',
+	SPEED: 'speed',
+};
+
+const grow = (units) => {
+	return {
+		[FOOD_EFFECTS.GROW]: { units },
+	};
+};
+
+const speed = (tick = SNAKE_TICKS.ONE_TENTH.TYPE, lastsFor = 30) => {
+	return { [FOOD_EFFECTS.SPEED]: { tick, lastsFor } };
+};
+
 const FOOD_TYPES = {
-	PROTEIN: { TYPE: 'PROTEIN', chance: 95, growth: 1 },
-	WALLRIDER_PORTION: { TYPE: 'WALLRIDER_PORTION', chance: 2, growth: 0 },
-	REDBULL: { TYPE: 'REDBULL', chance: 3, growth: 0, speed: SNAKE_TICKS.ONE_TENTH.TYPE },
-	FILLET: { TYPE: 'FILLET', chance: 0, growth: 2 },
+	FROG: {
+		TYPE: 'FROG',
+		chance: 95,
+		effects: { ...grow(1) },
+	},
+	RED_BULL: {
+		TYPE: 'RED_BULL',
+		chance: 5,
+		effects: { ...speed(SNAKE_TICKS.ONE_TENTH.TYPE, 30) }, // Lasts for 30 ticks.
+	},
+	FILLET: { TYPE: 'FILLET', chance: 0, effects: { ...grow(3) } },
 };
 
 const defaultDirections = {
-	1: DIRECTIONS.DOWN,
-	2: DIRECTIONS.RIGHT,
+	1: DIRECTIONS.RIGHT,
+	2: DIRECTIONS.LEFT,
 	3: DIRECTIONS.RIGHT,
 	4: DIRECTIONS.RIGHT,
 };
@@ -75,5 +97,6 @@ export {
 	FOOD_TYPES,
 	DEFAULT_TRACK,
 	SNAKE_TICKS,
+	FOOD_EFFECTS,
 	FOOD_TICKS,
 };

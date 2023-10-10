@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
-import { generateKey } from '../helpers';
+import { generateKey, isCellValid } from '../helpers';
 import cloneDeep from 'lodash/cloneDeep';
-import { DIRECTIONS, NUMBER_OF_ROWS, NUMBER_OF_COLUMNS, defaultDirections, FOOD_TYPES } from '../constants';
+import { DIRECTIONS, FOOD_EFFECTS, defaultDirections, FOOD_TYPES } from '../constants';
 
 const useSnakes = ({
 	initialSnakesState,
@@ -13,7 +13,7 @@ const useSnakes = ({
 	setFood,
 	getTracks,
 }) => {
-	const [snakes, setSnakes] = useState(initialSnakesState);
+	const [snakes, setSnakes] = useState(cloneDeep(initialSnakesState));
 	const snakesRef = useRef(snakes);
 
 	const getAllSnakeIds = () => {
@@ -52,9 +52,11 @@ const useSnakes = ({
 	};
 
 	const removeSnake = (snakeId) => {
+		const { removeSnakeFromTracks } = getTracks();
+		removeSnakeFromTracks(snakeId);
+
 		const removedSnake = cloneDeep(snakesRef.current[snakeId]);
 		delete snakesRef.current[snakeId];
-		setSnakes({ ...snakesRef.current });
 		return removedSnake;
 	};
 
@@ -70,7 +72,7 @@ const useSnakes = ({
 
 	const resetSnake = (snakeId) => {
 		setDirection(snakeId, defaultDirections[snakeId]); // Set to the default initial direction.
-		snakesRef.current = { ...snakesRef.current, [snakeId]: initialSnakesState[snakeId] };
+		snakesRef.current = { ...snakesRef.current, [snakeId]: cloneDeep(initialSnakesState[snakeId]) };
 		setSnakes({ ...snakesRef.current });
 		for (const snakeCell of Object.values(snakesRef.current[snakeId].hash)) {
 			const { x, y } = snakeCell;
@@ -80,88 +82,186 @@ const useSnakes = ({
 		}
 	};
 
-	const moveForward = (snakeId) => {
-		if (snakeId in snakesRef.current) {
-			const updatedHash = { ...snakesRef.current[snakeId].hash };
-			const updatedList = [...snakesRef.current[snakeId].list];
+	const removeSnakeFromModel = (snakeId) => {
+		// const { removeSnakeFromTracks } = getTracks();
+		// removeSnakeFromTracks(snakeId);
+		// delete snakesRef.current[snakeId];
+		resetSnake(snakeId);
+	};
 
-			// Create new head using prev head.
-			const [headKey] = updatedList;
-			const head = updatedHash[headKey];
+	const getSnakeWithoutTail = (snakeId) => {
+		return snakesRef.current[snakeId].list.slice(0, -1).reduce((hash, key) => {
+			hash[key] = snakesRef.current[snakeId].hash[key];
+			return hash;
+		}, {});
+	};
 
-			const direction = getDirection(snakeId);
+	const moveForward = (snakes) => {
+		for (const snakeId of snakes) {
+			if (snakeId in snakesRef.current) {
+				const list = snakesRef.current[snakeId].list;
+				const hash = snakesRef.current[snakeId].hash;
 
-			let newHead;
-			let newHeadKey;
-			if (direction == DIRECTIONS.RIGHT) {
-				newHead = { x: head.x, y: head.y + 1 };
-				newHeadKey = generateKey(newHead.x, newHead.y);
-				updatedHash[newHeadKey] = newHead;
-				updatedList.unshift(newHeadKey);
-			} else if (direction == DIRECTIONS.UP) {
-				newHead = { x: head.x - 1, y: head.y };
-				newHeadKey = generateKey(newHead.x, newHead.y);
-				updatedHash[newHeadKey] = newHead;
-				updatedList.unshift(newHeadKey);
-			} else if (direction == DIRECTIONS.DOWN) {
-				newHead = { x: head.x + 1, y: head.y };
-				newHeadKey = generateKey(newHead.x, newHead.y);
-				updatedHash[newHeadKey] = newHead;
-				updatedList.unshift(newHeadKey);
-			} else if (direction == DIRECTIONS.LEFT) {
-				newHead = { x: head.x, y: head.y - 1 };
-				newHeadKey = generateKey(newHead.x, newHead.y);
-				updatedHash[newHeadKey] = newHead;
-				updatedList.unshift(newHeadKey);
-			}
+				const [headKey] = list;
+				const head = hash[headKey];
+				const direction = getDirection(snakeId);
 
-			// Remove tail.
-			if (newHeadKey in getFood()) {
-				// TODO: refactor...
-				const removedFood = removeFood(newHead.x, newHead.y);
-				const { speed } = FOOD_TYPES[removedFood.type];
-				if (speed) {
-					const { addSnakeToTrack, removeSnakeFromTracks, resetSnakeTrack } = getTracks();
-					addSnakeToTrack(speed, snakeId);
+				let newHead;
+				if (direction == DIRECTIONS.RIGHT) {
+					newHead = { x: head.x, y: head.y + 1 };
+				} else if (direction == DIRECTIONS.UP) {
+					newHead = { x: head.x - 1, y: head.y };
+				} else if (direction == DIRECTIONS.DOWN) {
+					newHead = { x: head.x + 1, y: head.y };
+				} else if (direction == DIRECTIONS.LEFT) {
+					newHead = { x: head.x, y: head.y - 1 };
+				} else {
+					throw new Error('Invalid direction.');
 				}
-				switch (removedFood.type) {
-					case FOOD_TYPES.PROTEIN.TYPE:
-						updateSnake(snakeId, { hash: updatedHash, list: updatedList });
-						break;
 
-					case FOOD_TYPES.FILLET.TYPE:
-						updateSnake(snakeId, { hash: updatedHash, list: updatedList });
-						break;
+				const newHeadKey = generateKey(newHead.x, newHead.y, true); // Skip validation, since the snake could have hit a wall.
 
-					case FOOD_TYPES.WALLRIDER_PORTION.TYPE:
-						updateSnake(snakeId, { hash: updatedHash, list: updatedList });
-						break;
+				if (!isCellValid(newHead.x, newHead.y) || newHeadKey in getSnakeWithoutTail(snakeId)) {
+					// 1. The snake has collided with the wall.
+					// 2. The snake has collided with itself, check after removing the snake's tail since for the next
+					//    move to happen the tail would get removed.
+					removeSnakeFromModel(snakeId);
+				} else {
+					snakesRef.current[snakeId].list.unshift(newHeadKey);
+					snakesRef.current[snakeId].hash[newHeadKey] = newHead;
 
-					case FOOD_TYPES.REDBULL.TYPE:
-						updateSnake(snakeId, { hash: updatedHash, list: updatedList });
-						break;
+					// Remove the tail to make it look like the snake has moved forward.
+					const tailKey = snakesRef.current[snakeId].list.pop(); // mutates.
+					delete snakesRef.current[snakeId].hash[tailKey];
 				}
-			} else if (newHeadKey in snakesRef.current[snakeId].hash) {
-				// Snake collided with itself.
-				convertSnakeToFood(snakeId);
-			} else if (
-				newHead.x < NUMBER_OF_ROWS &&
-				newHead.x >= 0 &&
-				newHead.y >= 0 &&
-				newHead.y < NUMBER_OF_COLUMNS
-			) {
-				// Snake moved.
-				const tailKey = updatedList.pop(); // mutates.
-				delete updatedHash[tailKey];
-				updateSnake(snakeId, { hash: updatedHash, list: updatedList });
 			} else {
-				// Snake collided with the wall...
-				convertSnakeToFood(snakeId);
+				throw new Error('The id mentioned is not in the hash!');
 			}
 		}
-		// else {
-		// 	throw new Error('The id mentioned is not in the hash!');
+
+		// I understand that there are multiple loops in this method, and this method can be optimized
+		// futher,  but it is for the greater good, it will
+		// allow us to isolate logic errors faster when we hook the client to a websocket / webrtc connection.
+
+		const snakesToRemove = [];
+
+		for (let i = 0; i < Object.keys(snakesRef.current).length - 1; i++) {
+			for (let j = i + 1; j < Object.keys(snakesRef.current).length; j++) {
+				const s1 = Object.keys(snakesRef.current)[i];
+				const s2 = Object.keys(snakesRef.current)[j];
+
+				const {
+					hash: hash1,
+					list: [h1],
+				} = snakesRef.current[s1];
+
+				const {
+					hash: hash2,
+					list: [h2],
+				} = snakesRef.current[s2];
+
+				let bothSnakesRemoved = false;
+				if (h1 in hash2) {
+					if (h1 == h2) {
+						// Head to head collision remove both snakes.
+						snakesToRemove.push(s1, s2);
+						bothSnakesRemoved = true;
+					} else {
+						// remove snake 1
+						snakesToRemove.push(s1);
+					}
+				}
+
+				if (!bothSnakesRemoved) {
+					if (h2 in hash1) {
+						snakesToRemove.push(s2);
+					}
+				}
+			}
+		}
+		for (const snakeId of snakesToRemove) {
+			removeSnakeFromModel(snakeId);
+		}
+
+		setSnakes({ ...snakesRef.current });
+
+		// const food = getFood();
+		// if (newHeadKey in snakesRef.current[snakeId].hash) {
+		// 	// Snake collided with itself.
+		// 	convertSnakeToFood(snakeId);
+		// } else if (newHeadKey in food) {
+		// 	// TODO: refactor...
+		// 	const removedFood = removeFood(newHead.x, newHead.y);
+		// 	const { effects } = FOOD_TYPES[removedFood.type];
+		// 	for (const [key, value] of Object.entries(effects)) {
+		// 		switch (key) {
+		// 			case FOOD_EFFECTS.SPEED:
+		// 				const { addSnakeToTrack } = getTracks();
+		// 				const { tick, lastsFor } = value;
+		// 				addSnakeToTrack({ tick, snakeId, lastsFor });
+		// 				removeTail();
+		// 				break;
+		// 			case FOOD_EFFECTS.GROW:
+		// 				const { units } = value;
+		// 				for (let i = 1; i < units; i++) {
+		// 					// Add cells to the snake from the tail.
+		// 					const penultimateKey = updatedList[updatedList.length - 2];
+		// 					const tailKey = updatedList[updatedList.length - 1];
+		// 					const { x: x2, y: y2 } = updatedHash[tailKey];
+		// 					const { x: x1, y: y1 } = updatedHash[penultimateKey];
+		// 					let newTail;
+		// 					let newTailKey;
+		// 					if (x1 - x2 === 1 && y2 - y1 === 0) {
+		// 						// up
+		// 						newTail = { x: x2 - 1, y: y1 };
+		// 						newTailKey = generateKey(newTail.x, newTail.y, true); // Skip validation
+		// 					} else if (x1 - x2 === -1 && y2 - y1 === 0) {
+		// 						// down
+		// 						newTail = { x: x2 + 1, y: y1 };
+		// 						newTailKey = generateKey(newTail.x, newTail.y, true);
+		// 					} else if (y1 - y2 === 1 && x2 - x1 === 0) {
+		// 						// right
+		// 						newTail = { x: x1, y: y2 - 1 };
+		// 						newTailKey = generateKey(newTail.x, newTail.y, true);
+		// 					} else if (y1 - y2 === -1 && x2 - x1 === 0) {
+		// 						// left
+		// 						newTail = { x: x1, y: y2 + 1 };
+		// 						newTailKey = generateKey(newTail.x, newTail.y, true);
+		// 					} else {
+		// 						throw new Error("Snake's data is corrupt!, unable to find the direction.");
+		// 					}
+		// 					if (newTailKey in food) {
+		// 						// Remove the food if the added tail is occupied by the
+		// 						// food.
+		// 						removeFood(newTail.x, newTail.y);
+		// 					} else if (!(newHeadKey in updatedHash) && isCellValid(newTail.x, newTail.y)) {
+		// 						updatedList.push(newTailKey);
+		// 						updatedHash[newTailKey] = newTail;
+		// 					} else {
+		// 						// The cell before the tail cell is already occupied by either,
+		// 						// the opponent, self or the wall... So break out of the loop.
+		// 						break;
+		// 					}
+		// 				}
+		// 				break;
+		// 		}
+		// 	}
+		// 	updateSnake(snakeId, { hash: updatedHash, list: updatedList });
+		// } else if (isCellValid(newHead.x, newHead.y)) {
+		// 	// Move the snake forward.
+		// 	removeTail();
+		// 	updateSnake(snakeId, { hash: updatedHash, list: updatedList });
+		// } else {
+		// 	// Snake collided with the wall...
+		// 	convertSnakeToFood(snakeId);
 		// }
+
+		// updatedHash[newHeadKey] = newHead;
+		// updatedList.unshift(newHeadKey);
+
+		// const tailKey = updatedList.pop(); // mutates.
+		// delete updatedHash[tailKey];
+		// updateSnake(snakeId, { hash: updatedHash, list: updatedList });
 	};
 
 	return { snakes, moveForward, removeSnake, resetSnake, getSnakes, getSnakeCells, getAllSnakeIds };

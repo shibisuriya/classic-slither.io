@@ -16,7 +16,7 @@
 	border: 1px solid black;
 }
 
-.food.protein {
+.food.frog {
 	background-color: green;
 
 	/* Enter */
@@ -32,11 +32,7 @@
 	background-color: #d62828;
 }
 
-.food.wallrider_portion {
-	background-color: cyan;
-}
-
-.food.redbull {
+.food.red_bull {
 	-webkit-animation: vibrate 0.3s linear infinite both;
 	animation: vibrate 0.3s linear infinite both;
 	background-color: blue;
