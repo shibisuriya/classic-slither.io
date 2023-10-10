@@ -31,9 +31,10 @@ const useSnakes = ({
 				for (const key in snake.hash) {
 					if (key in hash) {
 						throw new Error('The snakes data is corrupt... ');
+					} else {
+						Object.assign(hash, { [key]: snake.hash[key] });
 					}
 				}
-				Object.assign(hash, snake.hash);
 				return hash;
 			}, {}),
 		);
@@ -173,65 +174,83 @@ const useSnakes = ({
 			convertSnakeToFood(snakeToRemove);
 		}
 
-		const food = getFood();
-		// if (newHeadKey in food) {
-		// 	// TODO: refactor...
-		// 	const removedFood = removeFood(newHead.x, newHead.y);
-		// 	const { effects } = FOOD_TYPES[removedFood.type];
-		// 	for (const [key, value] of Object.entries(effects)) {
-		// 		switch (key) {
-		// 			case FOOD_EFFECTS.SPEED:
-		// 				const { addSnakeToTrack } = getTracks();
-		// 				const { tick, lastsFor } = value;
-		// 				addSnakeToTrack({ tick, snakeId, lastsFor });
-		// 				removeTail();
-		// 				break;
-		// 			case FOOD_EFFECTS.GROW:
-		// 				const { units } = value;
-		// 				for (let i = 1; i < units; i++) {
-		// 					// Add cells to the snake from the tail.
-		// 					const penultimateKey = updatedList[updatedList.length - 2];
-		// 					const tailKey = updatedList[updatedList.length - 1];
-		// 					const { x: x2, y: y2 } = updatedHash[tailKey];
-		// 					const { x: x1, y: y1 } = updatedHash[penultimateKey];
-		// 					let newTail;
-		// 					let newTailKey;
-		// 					if (x1 - x2 === 1 && y2 - y1 === 0) {
-		// 						// up
-		// 						newTail = { x: x2 - 1, y: y1 };
-		// 						newTailKey = generateKey(newTail.x, newTail.y, true); // Skip validation
-		// 					} else if (x1 - x2 === -1 && y2 - y1 === 0) {
-		// 						// down
-		// 						newTail = { x: x2 + 1, y: y1 };
-		// 						newTailKey = generateKey(newTail.x, newTail.y, true);
-		// 					} else if (y1 - y2 === 1 && x2 - x1 === 0) {
-		// 						// right
-		// 						newTail = { x: x1, y: y2 - 1 };
-		// 						newTailKey = generateKey(newTail.x, newTail.y, true);
-		// 					} else if (y1 - y2 === -1 && x2 - x1 === 0) {
-		// 						// left
-		// 						newTail = { x: x1, y: y2 + 1 };
-		// 						newTailKey = generateKey(newTail.x, newTail.y, true);
-		// 					} else {
-		// 						throw new Error("Snake's data is corrupt!, unable to find the direction.");
-		// 					}
-		// 					if (newTailKey in food) {
-		// 						// Remove the food if the added tail is occupied by the
-		// 						// food.
-		// 						removeFood(newTail.x, newTail.y);
-		// 					} else if (!(newHeadKey in updatedHash) && isCellValid(newTail.x, newTail.y)) {
-		// 						updatedList.push(newTailKey);
-		// 						updatedHash[newTailKey] = newTail;
-		// 					} else {
-		// 						// The cell before the tail cell is already occupied by either,
-		// 						// the opponent, self or the wall... So break out of the loop.
-		// 						break;
-		// 					}
-		// 				}
-		// 				break;
-		// 		}
-		// 	}
-		// }
+		// We can use getSnakeCells() after this point... Since common cells are removed.
+		// It won't throw error...
+
+		for (const snakeId of Object.keys(snakesRef.current)) {
+			const { list, hash } = snakesRef.current[snakeId];
+			const [newHeadKey] = list;
+			if (newHeadKey in getFood()) {
+				const newHead = hash[newHeadKey];
+				const removedFood = removeFood(newHead.x, newHead.y);
+				const { effects } = FOOD_TYPES[removedFood.type];
+				for (const [key, value] of Object.entries(effects)) {
+					switch (key) {
+						case FOOD_EFFECTS.SPEED:
+							const { addSnakeToTrack } = getTracks();
+							const { tick, lastsFor } = value;
+							addSnakeToTrack({ tick, snakeId, lastsFor });
+							break;
+						case FOOD_EFFECTS.GROW:
+							const { units } = value;
+							for (let i = 0; i < units; i++) {
+								// Add cells to the snake from the tail.
+								const penultimateKey = list[list.length - 2];
+								const tailKey = list[list.length - 1];
+								const { x: x2, y: y2 } = hash[tailKey];
+								const { x: x1, y: y1 } = hash[penultimateKey];
+								let newTail;
+								let newTailKey;
+								if (x1 - x2 === 1 && y2 - y1 === 0) {
+									// up
+									newTail = { x: x2 - 1, y: y1 };
+									newTailKey = generateKey(newTail.x, newTail.y, true); // Skip validation
+								} else if (x1 - x2 === -1 && y2 - y1 === 0) {
+									// down
+									newTail = { x: x2 + 1, y: y1 };
+									newTailKey = generateKey(newTail.x, newTail.y, true);
+								} else if (y1 - y2 === 1 && x2 - x1 === 0) {
+									// right
+									newTail = { x: x1, y: y2 - 1 };
+									newTailKey = generateKey(newTail.x, newTail.y, true);
+								} else if (y1 - y2 === -1 && x2 - x1 === 0) {
+									// left
+									newTail = { x: x1, y: y2 + 1 };
+									newTailKey = generateKey(newTail.x, newTail.y, true);
+								} else {
+									throw new Error("Snake's data is corrupt!, unable to find the direction.");
+								}
+
+								// Now that we know the new tail, decide wheather to add it to the snake or not.
+								// Don't add tail if,
+								// 1) Is part of the wall.
+								// 2) Is part of self.
+								// 3) Is part of an opponent.
+
+								const addTail = () => {
+									snakesRef.current[snakeId].list.push(newTailKey);
+									snakesRef.current[snakeId].hash[newTailKey] = newTail;
+								};
+
+								if (newTailKey in getFood()) {
+									// Remove the food if the added tail is occupied by the
+									// food.
+									removeFood(newTail.x, newTail.y);
+									addTail();
+								} else if (isCellValid(newTail.x, newTail.y) && !(newTail in getSnakeCells())) {
+									addTail();
+								} else {
+									// The cell before the tail cell is already occupied by either,
+									// the opponent, self or the wall... So break out of the loop, can't
+									// add any cells further.
+									break;
+								}
+							}
+							break;
+					}
+				}
+			}
+		}
 
 		setSnakes({ ...snakesRef.current });
 	};

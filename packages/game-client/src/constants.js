@@ -1,8 +1,8 @@
 import { findKeyByValue, areValuesUnique } from './utils';
 
 // in px (pixels)
-const GRID_WIDTH = 30 * 30;
-const GRID_HEIGHT = 30 * 20;
+const GRID_WIDTH = 30 * 13;
+const GRID_HEIGHT = 30 * 13;
 const CELL_DIMENSION = 30;
 
 if (GRID_HEIGHT % CELL_DIMENSION !== 0) {
@@ -80,7 +80,7 @@ const FOOD_TYPES = {
 
 const defaultDirections = {
 	1: DIRECTIONS.RIGHT,
-	2: DIRECTIONS.LEFT,
+	2: DIRECTIONS.DOWN,
 	3: DIRECTIONS.RIGHT,
 	4: DIRECTIONS.RIGHT,
 };
