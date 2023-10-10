@@ -39,14 +39,6 @@ const useSnakes = ({
 		);
 	};
 
-	const updateSnake = (snakeId, snakeData) => {
-		snakesRef.current = {
-			...snakesRef.current,
-			[snakeId]: { ...snakesRef.current[snakeId], ...snakeData },
-		};
-		setSnakes({ ...snakesRef.current });
-	};
-
 	const getSnakes = () => {
 		return cloneDeep(snakesRef.current);
 	};
@@ -80,13 +72,6 @@ const useSnakes = ({
 				removeFood(x, y);
 			}
 		}
-	};
-
-	const removeSnakeFromModel = (snakeId) => {
-		// const { removeSnakeFromTracks } = getTracks();
-		// removeSnakeFromTracks(snakeId);
-		// delete snakesRef.current[snakeId];
-		resetSnake(snakeId);
 	};
 
 	const getSnakeWithoutTail = (snakeId) => {
@@ -125,7 +110,7 @@ const useSnakes = ({
 					// 1. The snake has collided with the wall.
 					// 2. The snake has collided with itself, check after removing the snake's tail since for the next
 					//    move to happen the tail would get removed.
-					removeSnakeFromModel(snakeId);
+					convertSnakeToFood(snakeId);
 				} else {
 					snakesRef.current[snakeId].list.unshift(newHeadKey);
 					snakesRef.current[snakeId].hash[newHeadKey] = newHead;
@@ -165,6 +150,7 @@ const useSnakes = ({
 					if (h1 == h2) {
 						// Head to head collision remove both snakes.
 						snakesToRemove.push(s1, s2);
+						removeFood(hash2[h1].x, hash2[h1].y);
 						bothSnakesRemoved = true;
 					} else {
 						// remove snake 1
@@ -179,17 +165,13 @@ const useSnakes = ({
 				}
 			}
 		}
-		for (const snakeId of snakesToRemove) {
-			removeSnakeFromModel(snakeId);
+
+		for (const snakeToRemove of snakesToRemove) {
+			convertSnakeToFood(snakeToRemove);
 		}
 
-		setSnakes({ ...snakesRef.current });
-
-		// const food = getFood();
-		// if (newHeadKey in snakesRef.current[snakeId].hash) {
-		// 	// Snake collided with itself.
-		// 	convertSnakeToFood(snakeId);
-		// } else if (newHeadKey in food) {
+		const food = getFood();
+		// if (newHeadKey in food) {
 		// 	// TODO: refactor...
 		// 	const removedFood = removeFood(newHead.x, newHead.y);
 		// 	const { effects } = FOOD_TYPES[removedFood.type];
@@ -246,22 +228,9 @@ const useSnakes = ({
 		// 				break;
 		// 		}
 		// 	}
-		// 	updateSnake(snakeId, { hash: updatedHash, list: updatedList });
-		// } else if (isCellValid(newHead.x, newHead.y)) {
-		// 	// Move the snake forward.
-		// 	removeTail();
-		// 	updateSnake(snakeId, { hash: updatedHash, list: updatedList });
-		// } else {
-		// 	// Snake collided with the wall...
-		// 	convertSnakeToFood(snakeId);
 		// }
 
-		// updatedHash[newHeadKey] = newHead;
-		// updatedList.unshift(newHeadKey);
-
-		// const tailKey = updatedList.pop(); // mutates.
-		// delete updatedHash[tailKey];
-		// updateSnake(snakeId, { hash: updatedHash, list: updatedList });
+		setSnakes({ ...snakesRef.current });
 	};
 
 	return { snakes, moveForward, removeSnake, resetSnake, getSnakes, getSnakeCells, getAllSnakeIds };
