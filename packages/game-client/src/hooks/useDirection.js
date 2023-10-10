@@ -1,9 +1,10 @@
 import React, { useRef } from 'react';
 import { DIRECTIONS } from '../constants';
 import { getOppositeDirection } from '../helpers';
+import { cloneDeep } from 'lodash';
 
 const useDirection = (initialState, snakeId) => {
-	const directions = useRef({ ...initialState }); // useRef is changing the supplied object :(
+	const directions = useRef(cloneDeep({ ...initialState })); // useRef is changing the supplied object :(
 
 	const onUp = () => {
 		const direction = getDirection(snakeId);

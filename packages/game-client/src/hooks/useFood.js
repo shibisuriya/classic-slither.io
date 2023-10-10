@@ -22,7 +22,7 @@ const whichFoodToSpawn = () => {
 		}
 	}
 	// TODO: There is something wrong with this function, returning undefined sometimes.
-	return FOOD_TYPES.PROTEIN;
+	return FOOD_TYPES.FROG;
 };
 
 const useFood = ({ initialFoodState = {}, getSnakeCells }) => {

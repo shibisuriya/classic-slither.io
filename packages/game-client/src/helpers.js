@@ -1,12 +1,14 @@
 import { NUMBER_OF_COLUMNS, NUMBER_OF_ROWS, DIRECTIONS } from './constants';
 
 const isCellValid = (i, j) => {
-	return !(i > NUMBER_OF_ROWS || j > NUMBER_OF_COLUMNS);
+	return i < NUMBER_OF_ROWS && j < NUMBER_OF_COLUMNS && i >= 0 && j >= 0;
 };
 
-const generateKey = (i, j) => {
-	if (!isCellValid(i, j)) {
-		throw new Error(`Invalid coordinates! ${i} ${j}`);
+const generateKey = (i, j, skipValidation = false) => {
+	if (!skipValidation) {
+		if (!isCellValid(i, j)) {
+			throw new Error(`Invalid coordinates! ${i} ${j}`);
+		}
 	}
 	return `${i}-${j}`;
 };

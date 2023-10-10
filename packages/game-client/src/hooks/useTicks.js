@@ -20,7 +20,7 @@ const useTicks = ({ moveForward, spawnFood, getSnakeCells, getAllSnakeIds }) => 
 	// snakes speed, we have push that particular snake to the
 	// appropriate track.
 
-	const addSnakeToTrack = (trackId, snakeId) => {
+	const addSnakeToTrack = ({ tick: trackId, snakeId, lastsFor }) => {
 		removeSnakeFromTracks(snakeId);
 		Object.assign(trackRef.current[trackId], { [snakeId]: snakeId });
 	};
@@ -42,9 +42,10 @@ const useTicks = ({ moveForward, spawnFood, getSnakeCells, getAllSnakeIds }) => 
 	};
 
 	const onTick = (tick) => {
-		Object.keys(trackRef.current[tick]).forEach((snakeId) => {
-			moveForward(snakeId);
-		});
+		const snakes = Object.keys(trackRef.current[tick]);
+		if (snakes.length > 0) {
+			moveForward(snakes);
+		}
 	};
 
 	// For food.

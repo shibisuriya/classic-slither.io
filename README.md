@@ -1,8 +1,6 @@
-# Classic Slither.io (WIP)
+# Classic Slither.io (Work in progress)
 
-# Classic Slither.io
-
-Imagine Slither.io, but with the classic Nokia 6110-style snake game.
+Experience Slither.io gameplay on a Nokia 6110-style snake game, powered by WebRTC.
 
 ## WebRTC:
 
@@ -10,25 +8,11 @@ The game operates without a backend, such as a WebSocket server; instead, it uti
 
 ## Game mechanics:
 
-### Types of snakes:
-
-#### Flash:
-
-The fastest snake in the game. (Moves 1.5x faster than the other snakes).
-
-#### Bulldozer:
-
-The opponent dies if he collides head on with this snake.
-
-#### Wall rider:
-
-This snake can't collide with the wall, if he does he comes out of the opposite wall.
-
 ### Types of food:
 
-#### Protein:
+#### Frogs:
 
-The snake's body grows by 1 cell if he consumes this food.
+The snake's body grows by 1 cell if it consumes a frog.
 
 #### Red bull:
 
