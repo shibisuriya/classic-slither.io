@@ -4,7 +4,3 @@
 	justify-content: center;
 	height: 100vh;
 }
-
-:global(body) {
-	margin: 0px;
-}

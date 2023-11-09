@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { SNAKE_TICKS, FOOD_TICKS, DEFAULT_TRACK } from '../constants';
 
-const useTicks = ({ moveForward, spawnFood, getSnakeCells, getAllSnakeIds }) => {
+const useTicks = ({ moveForward, spawnFood, getSnakeCells, getAllSnakeIds, isGamePaused }) => {
+	const isGamePausedRef = useRef(isGamePaused);
 	const timersRef = useRef([]);
 	const trackRef = useRef(
 		Object.keys(SNAKE_TICKS).reduce((tracks, tick) => {
@@ -48,29 +49,27 @@ const useTicks = ({ moveForward, spawnFood, getSnakeCells, getAllSnakeIds }) => 
 		}
 	};
 
-	// For food.
+	useEffect(() => {
+		isGamePausedRef.current = isGamePaused;
+	}, [isGamePaused]);
+
 	useEffect(() => {
 		for (const { DURATION: duration } of Object.values(FOOD_TICKS)) {
 			const timer = setInterval(() => {
-				spawnFood(getSnakeCells);
+				if (!isGamePausedRef.current) {
+					spawnFood(getSnakeCells);
+				}
 			}, duration);
 
 			timersRef.current.push(timer);
 		}
 
-		return () => {
-			for (const timer of timersRef.current) {
-				clearInterval(timer);
-			}
-		};
-	}, []);
-
-	// For snakes.
-	useEffect(() => {
 		for (const [key, value] of Object.entries(SNAKE_TICKS)) {
 			const { DURATION: duration } = value;
 			const timer = setInterval(() => {
-				onTick(key);
+				if (!isGamePausedRef.current) {
+					onTick(key);
+				}
 			}, duration);
 
 			timersRef.current.push(timer);

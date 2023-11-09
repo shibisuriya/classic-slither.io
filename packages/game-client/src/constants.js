@@ -47,7 +47,7 @@ const FOOD_TICKS = {
 // if they are unique.
 areValuesUnique(SNAKE_TICKS);
 
-const DEFAULT_TRACK = SNAKE_TICKS.QUARTER.TYPE;
+const DEFAULT_TRACK = SNAKE_TICKS.ONE.TYPE;
 
 const FOOD_EFFECTS = {
 	GROW: 'grow',
@@ -69,13 +69,23 @@ const FOOD_TYPES = {
 		TYPE: 'FROG',
 		chance: 95,
 		effects: { ...grow(1) },
+		color: 'green',
+		animationClass: 'frog',
 	},
 	RED_BULL: {
 		TYPE: 'RED_BULL',
 		chance: 5,
 		effects: { ...speed(SNAKE_TICKS.ONE_TENTH.TYPE, 30) }, // Lasts for 30 ticks.
+		color: 'silver',
+		animationClass: 'red-bull',
 	},
-	FILLET: { TYPE: 'FILLET', chance: 0, effects: { ...grow(3) } },
+	FILLET: {
+		TYPE: 'FILLET',
+		chance: 0,
+		effects: { ...grow(3) },
+		color: 'red',
+		animationClass: 'fillet',
+	},
 };
 
 const defaultDirections = {

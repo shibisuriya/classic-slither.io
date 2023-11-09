@@ -23,4 +23,16 @@ const findKeyByValue = (object, value) => {
 	throw new Error("The key you supplied doesn't exist in the hash.");
 };
 
-export { generateRandomNumber, findKeyByValue, areValuesUnique };
+const stringToBoolean = (val) => {
+	if (val === 'true' || val === true) {
+		return true;
+	} else if (val === 'false' || val === false) {
+		return false;
+	} else if (val === null || val === undefined) {
+		return null;
+	} else {
+		throw new Error(`Invalid string passed! ${val}`);
+	}
+};
+
+export { generateRandomNumber, findKeyByValue, areValuesUnique, stringToBoolean };
