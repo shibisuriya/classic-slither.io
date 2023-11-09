@@ -1,7 +1,7 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useRef } from 'react';
 import Game from './Game';
 import { Button } from 'antd';
-import { Divider, Space, Checkbox, Switch } from 'antd';
+import { Divider, Space, Checkbox, Grid, Flex } from 'antd';
 import { stringToBoolean } from './utils';
 
 function App() {
@@ -11,6 +11,7 @@ function App() {
 
 	const [isGamePaused, setIsGamePaused] = useState(stringToBoolean(localStorage.getItem('isGamePaused') ?? true));
 	const [showCellId, setShowCellId] = useState(stringToBoolean(localStorage.getItem('showCellId')) ?? false);
+	const gameRef = useRef();
 	return (
 		<Fragment>
 			<Space>
@@ -45,9 +46,19 @@ function App() {
 					Show cell ID?
 				</Checkbox>
 			</Space>
+			<Flex>
+				<Space>
+					<Button type="primary" onClick={() => gameRef.current.prevMove()}>
+						{'<'}
+					</Button>
+					<Button type="primary" onClick={() => gameRef.current.nextMove()}>
+						{'>'}
+					</Button>
+				</Space>
+			</Flex>
 
 			<Divider dashed />
-			<Game showCellId={showCellId} isGamePaused={isGamePaused} />
+			<Game ref={gameRef} showCellId={showCellId} isGamePaused={isGamePaused} />
 		</Fragment>
 	);
 }

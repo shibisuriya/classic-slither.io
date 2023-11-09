@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useImperativeHandle, forwardRef } from 'react';
 import { defaultDirections } from './constants';
 import { initialSnakesState, initialFoodState } from './computed';
 import { useDirection, useFood, useTicks, useSnakes, useInput, useSocket } from './hooks';
@@ -17,9 +17,20 @@ import styles from './app.module.css';
 // 	);
 // }
 
-function Game(props) {
+const Game = forwardRef((props, ref) => {
 	const { showCellId, isGamePaused } = props;
 	const [snakeId, setSnakeId] = useState(1);
+
+	useImperativeHandle(
+		ref,
+		() => {
+			return {
+				nextMove,
+				prevMove,
+			};
+		},
+		[],
+	);
 
 	// Keep the direction of the snakes inside useRef since we don't
 	// want to force rerender of the component when the user changes
@@ -60,6 +71,14 @@ function Game(props) {
 		isGamePaused,
 	});
 
+	function nextMove() {
+		moveForward(Object.keys(snakes)); // Move all the snakes available one step forward.
+	}
+
+	function prevMove() {
+		console.log('Prev move!');
+	}
+
 	return (
 		<div className={styles.game}>
 			{/* <select value={snakeId} onChange={(e) => setSnakeId(e.target.value)}>
@@ -72,6 +91,6 @@ function Game(props) {
 			<Grid snakes={snakes} food={food} showCellId={showCellId} />
 		</div>
 	);
-}
+});
 
 export default Game;
