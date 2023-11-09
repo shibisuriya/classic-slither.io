@@ -1,5 +1,5 @@
-import React, { Fragment, useState, useImperativeHandle, forwardRef } from 'react';
-import { defaultDirections } from './constants';
+import React, { Fragment, useState, useImperativeHandle, forwardRef, useEffect } from 'react';
+import { allSnakesSelectOption, defaultDirections } from './constants';
 import { initialSnakesState, initialFoodState } from './computed';
 import { useDirection, useFood, useTicks, useSnakes, useInput, useSocket } from './hooks';
 import Grid from './Grid';
@@ -18,19 +18,8 @@ import styles from './app.module.css';
 // }
 
 const Game = forwardRef((props, ref) => {
-	const { showCellId, isGamePaused } = props;
+	const { showCellId, isGamePaused, updateSnakeIdList } = props;
 	const [snakeId, setSnakeId] = useState(1);
-
-	useImperativeHandle(
-		ref,
-		() => {
-			return {
-				nextMove,
-				prevMove,
-			};
-		},
-		[],
-	);
 
 	// Keep the direction of the snakes inside useRef since we don't
 	// want to force rerender of the component when the user changes
@@ -64,6 +53,10 @@ const Game = forwardRef((props, ref) => {
 		getTracks,
 	});
 
+	useEffect(() => {
+		updateSnakeIdList(Object.keys(snakes));
+	}, [snakes]);
+
 	const { addSnakeToTrack, removeSnakeFromTracks, resetSnakeTrack } = useTicks({
 		moveForward,
 		spawnFood,
@@ -71,25 +64,34 @@ const Game = forwardRef((props, ref) => {
 		isGamePaused,
 	});
 
-	function nextMove() {
-		moveForward(Object.keys(snakes)); // Move all the snakes available one step forward.
+	function nextMove(snakeId = allSnakesSelectOption) {
+		if (snakeId) {
+			moveForward(snakeId === allSnakesSelectOption ? Object.keys(snakes) : [snakeId]); // Move all the snakes available one step forward.
+		}
 	}
 
 	function prevMove() {
 		console.log('Prev move!');
 	}
 
+	useImperativeHandle(
+		ref,
+		() => {
+			return {
+				nextMove,
+				prevMove,
+				spawnFood,
+			};
+		},
+		[],
+	);
+
 	return (
-		<div className={styles.game}>
-			{/* <select value={snakeId} onChange={(e) => setSnakeId(e.target.value)}>
-				{Object.keys(snakes).map((snakeId, index) => (
-					<option value={snakeId} key={index}>
-						{snakeId}
-					</option>
-				))}
-			</select> */}
-			<Grid snakes={snakes} food={food} showCellId={showCellId} />
-		</div>
+		<Fragment>
+			<div className={styles.game}>
+				<Grid snakes={snakes} food={food} showCellId={showCellId} />
+			</div>
+		</Fragment>
 	);
 });
 
