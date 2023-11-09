@@ -1,5 +1,5 @@
 import { NUMBER_OF_COLUMNS, NUMBER_OF_ROWS } from './constants';
-import { generateKey, generateValue } from './helpers';
+import { generateKey, generateValue, isCellValid } from './helpers';
 
 const generateGridMap = () => {
 	const hash = {};
@@ -30,13 +30,12 @@ const initialSnakesState = {
 	},
 	2: {
 		headColor: 'blue',
-		bodyColor: 'yellow',
+		bodyColor: 'purple',
 		hash: {
 			'0-11': { x: 0, y: 11 },
 			'0-12': { x: 0, y: 12 },
-			'0-13': { x: 0, y: 13 },
 		},
-		list: ['0-11', '0-12', '0-13'],
+		list: ['0-11', '0-12'],
 	},
 	3: {
 		headColor: 'yellow',
@@ -66,6 +65,21 @@ const initialSnakesState = {
 		list: ['12-6', '12-5', '12-4', '12-3', '12-2', '12-1', '12-0'],
 	},
 };
+
+// TODO: Move this logic into a unit test later.
+
+Object.values(initialSnakesState).forEach((snake) => {
+	const { hash, list } = snake;
+	for (const cell of list) {
+		if (!(cell in hash)) {
+			throw new Error('Snake initial data is corrupt! list and hash are not in sync.');
+		}
+		const { x, y } = hash[cell];
+		if (!isCellValid(x, y)) {
+			throw new Error(`A cell is outside of the grid! x - ${x}, y - ${y}`);
+		}
+	}
+});
 
 const initialFoodState = {};
 
