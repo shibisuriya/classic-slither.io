@@ -1,14 +1,13 @@
 {
 	"scripts": {
-		"start": "nodemon ./src/main.js"
+		"start": "nodemon ./src/main.js",
+		"dev": "docker-compose up"
 	},
-	"name": "mock-server",
+	"name": "replay-server",
 	"version": "1.0.0",
 	"main": "index.js",
 	"license": "MIT",
-	"dependencies": {
-		"ws": "^8.14.2"
-	},
+	"dependencies": {},
 	"devDependencies": {
 		"nodemon": "^3.0.1"
 	}

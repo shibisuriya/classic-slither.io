@@ -1,0 +1,28 @@
+version: '3'
+services:
+    express:
+        image: node:14
+        working_dir: /app
+        volumes:
+            - ./server:/app
+        # depends_on:
+        #     - mongo
+        environment:
+            MONGO_URL: mongodb://mongo:27017/yourdb
+        command: >
+            bash -c "yarn install && yarn run dev"
+        ports:
+            - '3000:3000'
+        networks:
+            - app-net
+    # mongo:
+    #     image: mongo:latest
+    #     ports:
+    #         - '27017:27017'
+    #     volumes:
+    #         - ./mongo-data:/data/db
+    #     networks:
+    #         - app-net
+
+networks:
+    app-net:
