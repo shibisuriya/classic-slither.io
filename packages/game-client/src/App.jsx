@@ -1,8 +1,8 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useRef, useEffect } from 'react';
 import Game from './Game';
-import { Button } from 'antd';
-import { Divider, Space, Checkbox, Switch } from 'antd';
+import { Divider, Space, Checkbox, Flex, Select, Button } from 'antd';
 import { stringToBoolean } from './utils';
+import { allSnakesSelectOption } from './constants';
 
 function App() {
 	const [recordInLocalStorage, setRecordInLocalStorage] = useState(
@@ -11,6 +11,25 @@ function App() {
 
 	const [isGamePaused, setIsGamePaused] = useState(stringToBoolean(localStorage.getItem('isGamePaused') ?? true));
 	const [showCellId, setShowCellId] = useState(stringToBoolean(localStorage.getItem('showCellId')) ?? false);
+	const gameRef = useRef();
+
+	const [snakeIdList, setSnakeIdList] = useState([allSnakesSelectOption]);
+	const [selectedSnake, setSelectedSnake] = useState(allSnakesSelectOption);
+
+	function updateSnakeIdList(ids) {
+		if (ids.length > 0) {
+			if (!ids.includes(selectedSnake) && selectedSnake !== allSnakesSelectOption) {
+				const [firstId] = ids;
+				setSelectedSnake(firstId);
+			}
+
+			setSnakeIdList([allSnakesSelectOption].concat(ids));
+		} else {
+			setSelectedSnake(null);
+			setSnakeIdList([]);
+		}
+	}
+
 	return (
 		<Fragment>
 			<Space>
@@ -44,10 +63,39 @@ function App() {
 				>
 					Show cell ID?
 				</Checkbox>
-			</Space>
+				<Button type="primary" onClick={() => gameRef.current.spawnFood()}>
+					Spawn food
+				</Button>
 
+				<Select
+					style={{ width: 60 }}
+					value={selectedSnake}
+					disabled={snakeIdList.length === 0}
+					onChange={(val) => {
+						setSelectedSnake(val);
+					}}
+					options={snakeIdList.map((id) => {
+						return { value: id, label: id };
+					})}
+				/>
+			</Space>
+			<Flex>
+				<Space>
+					<Button type="primary" onClick={() => gameRef.current.prevMove(selectedSnake)}>
+						{'<'}
+					</Button>
+					<Button type="primary" onClick={() => gameRef.current.nextMove(selectedSnake)}>
+						{'>'}
+					</Button>
+				</Space>
+			</Flex>
 			<Divider dashed />
-			<Game showCellId={showCellId} isGamePaused={isGamePaused} />
+			<Game
+				ref={gameRef}
+				showCellId={showCellId}
+				isGamePaused={isGamePaused}
+				updateSnakeIdList={updateSnakeIdList}
+			/>
 		</Fragment>
 	);
 }

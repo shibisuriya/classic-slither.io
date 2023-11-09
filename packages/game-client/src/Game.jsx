@@ -1,5 +1,5 @@
-import React, { Fragment, useState } from 'react';
-import { defaultDirections } from './constants';
+import React, { Fragment, useState, useImperativeHandle, forwardRef, useEffect } from 'react';
+import { allSnakesSelectOption, defaultDirections } from './constants';
 import { initialSnakesState, initialFoodState } from './computed';
 import { useDirection, useFood, useTicks, useSnakes, useInput, useSocket } from './hooks';
 import Grid from './Grid';
@@ -17,8 +17,8 @@ import styles from './app.module.css';
 // 	);
 // }
 
-function Game(props) {
-	const { showCellId, isGamePaused } = props;
+const Game = forwardRef((props, ref) => {
+	const { showCellId, isGamePaused, updateSnakeIdList } = props;
 	const [snakeId, setSnakeId] = useState(1);
 
 	// Keep the direction of the snakes inside useRef since we don't
@@ -53,6 +53,10 @@ function Game(props) {
 		getTracks,
 	});
 
+	useEffect(() => {
+		updateSnakeIdList(Object.keys(snakes));
+	}, [snakes]);
+
 	const { addSnakeToTrack, removeSnakeFromTracks, resetSnakeTrack } = useTicks({
 		moveForward,
 		spawnFood,
@@ -60,18 +64,35 @@ function Game(props) {
 		isGamePaused,
 	});
 
-	return (
-		<div className={styles.game}>
-			{/* <select value={snakeId} onChange={(e) => setSnakeId(e.target.value)}>
-				{Object.keys(snakes).map((snakeId, index) => (
-					<option value={snakeId} key={index}>
-						{snakeId}
-					</option>
-				))}
-			</select> */}
-			<Grid snakes={snakes} food={food} showCellId={showCellId} />
-		</div>
+	function nextMove(snakeId = allSnakesSelectOption) {
+		if (snakeId) {
+			moveForward(snakeId === allSnakesSelectOption ? Object.keys(snakes) : [snakeId]); // Move all the snakes available one step forward.
+		}
+	}
+
+	function prevMove() {
+		console.log('Prev move!');
+	}
+
+	useImperativeHandle(
+		ref,
+		() => {
+			return {
+				nextMove,
+				prevMove,
+				spawnFood,
+			};
+		},
+		[],
 	);
-}
+
+	return (
+		<Fragment>
+			<div className={styles.game}>
+				<Grid snakes={snakes} food={food} showCellId={showCellId} />
+			</div>
+		</Fragment>
+	);
+});
 
 export default Game;

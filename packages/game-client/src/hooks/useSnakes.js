@@ -154,7 +154,9 @@ const useSnakes = ({
 					if (h1 == h2) {
 						// Head to head collision remove both snakes.
 						snakesToRemove.push(s1, s2);
-						removeFood(hash2[h1].x, hash2[h1].y);
+						if (isFood(hash2[h1].x, hash2[h1].y)) {
+							removeFood(hash2[h1].x, hash2[h1].y);
+						}
 						bothSnakesRemoved = true;
 					} else {
 						// remove snake 1

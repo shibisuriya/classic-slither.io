@@ -5,6 +5,8 @@ const GRID_WIDTH = 30 * 13;
 const GRID_HEIGHT = 30 * 13;
 const CELL_DIMENSION = 30;
 
+export const allSnakesSelectOption = 'All';
+
 if (GRID_HEIGHT % CELL_DIMENSION !== 0) {
 	throw new Error('GRID_HEIGHT is not divislbe by CELL_DIMENSION');
 }
@@ -90,7 +92,7 @@ const FOOD_TYPES = {
 
 const defaultDirections = {
 	1: DIRECTIONS.RIGHT,
-	2: DIRECTIONS.DOWN,
+	2: DIRECTIONS.LEFT,
 	3: DIRECTIONS.RIGHT,
 	4: DIRECTIONS.RIGHT,
 };
