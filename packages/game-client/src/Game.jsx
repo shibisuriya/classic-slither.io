@@ -3,7 +3,7 @@ import { allSnakesSelectOption, defaultDirections } from './constants';
 import { initialSnakesState, initialFoodState } from './computed';
 import { useDirection, useFood, useTicks, useSnakes, useInput, useSocket } from './hooks';
 import Grid from './Grid';
-import styles from './app.module.css';
+import styles from './game.module.css';
 
 // function App() {
 // 	const [mounted, setMounted] = useState(true);

@@ -4,6 +4,7 @@ import { Divider, Space, Checkbox, Flex, Select, Button } from 'antd';
 import { stringToBoolean } from './utils';
 import { allSnakesSelectOption } from './constants';
 import DirectionSelector from './components/DirectionSelector';
+import styles from './app.module.css';
 
 function App() {
 	const [recordInLocalStorage, setRecordInLocalStorage] = useState(
@@ -100,7 +101,14 @@ function App() {
 				</Space>
 			</Flex>
 			<Divider dashed />
-			<Flex justify="space-evenly">
+			<Game
+				ref={gameRef}
+				showCellId={showCellId}
+				isGamePaused={isGamePaused}
+				updateSnakeIdList={updateSnakeIdList}
+				updateDirectionList={updateDirectionList}
+			/>
+			<Flex justify="space-evenly" className={styles['direction-selector']}>
 				{snakeIdList
 					.filter((item) => item.id !== allSnakesSelectOption.id)
 					.map((snake, index) => {
@@ -117,13 +125,6 @@ function App() {
 						);
 					})}
 			</Flex>
-			<Game
-				ref={gameRef}
-				showCellId={showCellId}
-				isGamePaused={isGamePaused}
-				updateSnakeIdList={updateSnakeIdList}
-				updateDirectionList={updateDirectionList}
-			/>
 		</Fragment>
 	);
 }
