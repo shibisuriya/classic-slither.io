@@ -101,19 +101,21 @@ function App() {
 			</Flex>
 			<Divider dashed />
 			<Flex justify="space-evenly">
-				{snakeIdList.map((snake, index) => {
-					const { id, headColor, bodyColor } = snake;
-					return (
-						<DirectionSelector
-							key={index}
-							id={id}
-							headColor={headColor}
-							bodyColor={bodyColor}
-							direction={directions[id]}
-							updateSnakeDirection={updateSnakeDirection}
-						/>
-					);
-				})}
+				{snakeIdList
+					.filter((item) => item.id !== allSnakesSelectOption.id)
+					.map((snake, index) => {
+						const { id, headColor, bodyColor } = snake;
+						return (
+							<DirectionSelector
+								key={index}
+								id={id}
+								headColor={headColor}
+								bodyColor={bodyColor}
+								direction={directions[id]}
+								updateSnakeDirection={updateSnakeDirection}
+							/>
+						);
+					})}
 			</Flex>
 			<Game
 				ref={gameRef}
