@@ -78,7 +78,7 @@ const FOOD_TYPES = {
 		TYPE: 'RED_BULL',
 		chance: 5,
 		effects: { ...speed(SNAKE_TICKS.ONE_TENTH.TYPE, 30) }, // Lasts for 30 ticks.
-		color: 'silver',
+		color: 'cyan',
 		animationClass: 'red-bull',
 	},
 	FILLET: {
