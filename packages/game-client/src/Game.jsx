@@ -18,13 +18,16 @@ import styles from './app.module.css';
 // }
 
 const Game = forwardRef((props, ref) => {
-	const { showCellId, isGamePaused, updateSnakeIdList } = props;
+	const { showCellId, isGamePaused, updateSnakeIdList, updateDirectionList } = props;
 	const [snakeId, setSnakeId] = useState(1);
 
 	// Keep the direction of the snakes inside useRef since we don't
 	// want to force rerender of the component when the user changes
 	// the direction.
-	const { getDirection, onLeft, onRight, onUp, onDown, setDirection } = useDirection(defaultDirections, 1);
+	const { getDirection, onLeft, onRight, onUp, onDown, setDirection, directions } = useDirection(
+		defaultDirections,
+		1,
+	);
 
 	useInput({ snakes, onUp, onDown, onLeft, onRight, snakeId });
 
@@ -54,8 +57,17 @@ const Game = forwardRef((props, ref) => {
 	});
 
 	useEffect(() => {
-		updateSnakeIdList(Object.keys(snakes));
+		updateSnakeIdList(
+			Object.entries(snakes).map(([key, value]) => {
+				const { bodyColor, headColor } = value;
+				return { id: key, bodyColor, headColor };
+			}),
+		);
 	}, [snakes]);
+
+	useEffect(() => {
+		updateDirectionList(directions);
+	}, [directions]);
 
 	const { addSnakeToTrack, removeSnakeFromTracks, resetSnakeTrack } = useTicks({
 		moveForward,
@@ -64,9 +76,9 @@ const Game = forwardRef((props, ref) => {
 		isGamePaused,
 	});
 
-	function nextMove(snakeId = allSnakesSelectOption) {
+	function nextMove(snakeId = allSnakesSelectOption.id) {
 		if (snakeId) {
-			moveForward(snakeId === allSnakesSelectOption ? Object.keys(snakes) : [snakeId]); // Move all the snakes available one step forward.
+			moveForward(snakeId === allSnakesSelectOption.id ? Object.keys(snakes) : [snakeId]); // Move all the snakes available one step forward.
 		}
 	}
 
@@ -81,6 +93,7 @@ const Game = forwardRef((props, ref) => {
 				nextMove,
 				prevMove,
 				spawnFood,
+				setDirection,
 			};
 		},
 		[],

@@ -3,6 +3,7 @@ import Game from './Game';
 import { Divider, Space, Checkbox, Flex, Select, Button } from 'antd';
 import { stringToBoolean } from './utils';
 import { allSnakesSelectOption } from './constants';
+import DirectionSelector from './components/DirectionSelector';
 
 function App() {
 	const [recordInLocalStorage, setRecordInLocalStorage] = useState(
@@ -14,20 +15,29 @@ function App() {
 	const gameRef = useRef();
 
 	const [snakeIdList, setSnakeIdList] = useState([allSnakesSelectOption]);
-	const [selectedSnake, setSelectedSnake] = useState(allSnakesSelectOption);
+	const [selectedSnake, setSelectedSnake] = useState(allSnakesSelectOption.id);
+	const [directions, setDirections] = useState({});
 
-	function updateSnakeIdList(ids) {
-		if (ids.length > 0) {
-			if (!ids.includes(selectedSnake) && selectedSnake !== allSnakesSelectOption) {
-				const [firstId] = ids;
-				setSelectedSnake(firstId);
+	function updateSnakeIdList(snakes) {
+		if (snakes.length > 0) {
+			if (!snakes.find(({ id }) => id === selectedSnake) && selectedSnake !== allSnakesSelectOption.id) {
+				const [{ id }] = snakes;
+				setSelectedSnake(id);
 			}
-
-			setSnakeIdList([allSnakesSelectOption].concat(ids));
+			setSnakeIdList([allSnakesSelectOption].concat(snakes));
 		} else {
 			setSelectedSnake(null);
 			setSnakeIdList([]);
 		}
+	}
+
+	function updateDirectionList(directions) {
+		setDirections(directions);
+	}
+
+	function updateSnakeDirection(snakeId, direction) {
+		setSelectedSnake(snakeId);
+		gameRef.current.setDirection(snakeId, direction);
 	}
 
 	return (
@@ -74,7 +84,7 @@ function App() {
 					onChange={(val) => {
 						setSelectedSnake(val);
 					}}
-					options={snakeIdList.map((id) => {
+					options={snakeIdList.map(({ id }) => {
 						return { value: id, label: id };
 					})}
 				/>
@@ -90,11 +100,27 @@ function App() {
 				</Space>
 			</Flex>
 			<Divider dashed />
+			<Flex justify="space-evenly">
+				{snakeIdList.map((snake, index) => {
+					const { id, headColor, bodyColor } = snake;
+					return (
+						<DirectionSelector
+							key={index}
+							id={id}
+							headColor={headColor}
+							bodyColor={bodyColor}
+							direction={directions[id]}
+							updateSnakeDirection={updateSnakeDirection}
+						/>
+					);
+				})}
+			</Flex>
 			<Game
 				ref={gameRef}
 				showCellId={showCellId}
 				isGamePaused={isGamePaused}
 				updateSnakeIdList={updateSnakeIdList}
+				updateDirectionList={updateDirectionList}
 			/>
 		</Fragment>
 	);
