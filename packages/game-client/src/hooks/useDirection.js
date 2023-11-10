@@ -1,10 +1,11 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { DIRECTIONS } from '../constants';
 import { getOppositeDirection } from '../helpers';
 import { cloneDeep } from 'lodash';
 
 const useDirection = (initialState, snakeId) => {
-	const directions = useRef(cloneDeep({ ...initialState })); // useRef is changing the supplied object :(
+	const directionsRef = useRef(cloneDeep({ ...initialState })); // useRef is changing the supplied object :(
+	const [directions, setDirections] = useState(directionsRef.current);
 
 	const onUp = () => {
 		const direction = getDirection(snakeId);
@@ -44,15 +45,16 @@ const useDirection = (initialState, snakeId) => {
 	};
 
 	const setDirection = (snakeId, direction) => {
-		directions.current[snakeId] = direction;
+		directionsRef.current[snakeId] = direction;
+		setDirections({ ...directionsRef.current });
 	};
 
 	const getDirection = (snakeId) => {
-		return directions.current[snakeId];
+		return directionsRef.current[snakeId];
 	};
 
 	return {
-		directions: directions.current,
+		directions,
 		onUp,
 		onDown,
 		onLeft,

@@ -16,6 +16,7 @@ function App() {
 
 	const [snakeIdList, setSnakeIdList] = useState([allSnakesSelectOption]);
 	const [selectedSnake, setSelectedSnake] = useState(allSnakesSelectOption.id);
+	const [directions, setDirections] = useState({});
 
 	function updateSnakeIdList(snakes) {
 		if (snakes.length > 0) {
@@ -28,6 +29,15 @@ function App() {
 			setSelectedSnake(null);
 			setSnakeIdList([]);
 		}
+	}
+
+	function updateDirectionList(directions) {
+		setDirections(directions);
+	}
+
+	function updateSnakeDirection(snakeId, direction) {
+		setSelectedSnake(snakeId);
+		gameRef.current.setDirection(snakeId, direction);
 	}
 
 	return (
@@ -93,7 +103,16 @@ function App() {
 			<Flex justify="space-evenly">
 				{snakeIdList.map((snake, index) => {
 					const { id, headColor, bodyColor } = snake;
-					return <DirectionSelector key={index} id={id} headColor={headColor} bodyColor={bodyColor} />;
+					return (
+						<DirectionSelector
+							key={index}
+							id={id}
+							headColor={headColor}
+							bodyColor={bodyColor}
+							direction={directions[id]}
+							updateSnakeDirection={updateSnakeDirection}
+						/>
+					);
 				})}
 			</Flex>
 			<Game
@@ -101,6 +120,7 @@ function App() {
 				showCellId={showCellId}
 				isGamePaused={isGamePaused}
 				updateSnakeIdList={updateSnakeIdList}
+				updateDirectionList={updateDirectionList}
 			/>
 		</Fragment>
 	);
