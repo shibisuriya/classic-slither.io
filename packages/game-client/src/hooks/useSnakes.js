@@ -122,7 +122,7 @@ const useSnakes = ({
 					// Remove the tail to make it look like the snake has moved forward.
 					const tailKey = snakesRef.current[snakeId].list.pop(); // mutates.
 					if (tailKey !== newHeadKey) {
-						// When snake bites its own tail... It survives!
+						// When snake bites its own tail... It survives! Since the tail move one step forward as well.
 						delete snakesRef.current[snakeId].hash[tailKey];
 					}
 				}
