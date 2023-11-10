@@ -121,7 +121,10 @@ const useSnakes = ({
 
 					// Remove the tail to make it look like the snake has moved forward.
 					const tailKey = snakesRef.current[snakeId].list.pop(); // mutates.
-					delete snakesRef.current[snakeId].hash[tailKey];
+					if (tailKey !== newHeadKey) {
+						// When snake bites its own tail... It survives!
+						delete snakesRef.current[snakeId].hash[tailKey];
+					}
 				}
 			} else {
 				throw new Error('The id mentioned is not in the hash!');

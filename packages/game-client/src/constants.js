@@ -5,7 +5,7 @@ const GRID_WIDTH = 30 * 13;
 const GRID_HEIGHT = 30 * 13;
 const CELL_DIMENSION = 30;
 
-export const allSnakesSelectOption = 'All';
+export const allSnakesSelectOption = { id: 'All' };
 
 if (GRID_HEIGHT % CELL_DIMENSION !== 0) {
 	throw new Error('GRID_HEIGHT is not divislbe by CELL_DIMENSION');
@@ -49,7 +49,7 @@ const FOOD_TICKS = {
 // if they are unique.
 areValuesUnique(SNAKE_TICKS);
 
-const DEFAULT_TRACK = SNAKE_TICKS.ONE.TYPE;
+const DEFAULT_TRACK = SNAKE_TICKS.QUARTER.TYPE;
 
 const FOOD_EFFECTS = {
 	GROW: 'grow',

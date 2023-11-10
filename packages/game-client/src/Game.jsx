@@ -54,7 +54,12 @@ const Game = forwardRef((props, ref) => {
 	});
 
 	useEffect(() => {
-		updateSnakeIdList(Object.keys(snakes));
+		updateSnakeIdList(
+			Object.entries(snakes).map(([key, value]) => {
+				const { bodyColor, headColor } = value;
+				return { id: key, bodyColor, headColor };
+			}),
+		);
 	}, [snakes]);
 
 	const { addSnakeToTrack, removeSnakeFromTracks, resetSnakeTrack } = useTicks({
@@ -64,9 +69,9 @@ const Game = forwardRef((props, ref) => {
 		isGamePaused,
 	});
 
-	function nextMove(snakeId = allSnakesSelectOption) {
+	function nextMove(snakeId = allSnakesSelectOption.id) {
 		if (snakeId) {
-			moveForward(snakeId === allSnakesSelectOption ? Object.keys(snakes) : [snakeId]); // Move all the snakes available one step forward.
+			moveForward(snakeId === allSnakesSelectOption.id ? Object.keys(snakes) : [snakeId]); // Move all the snakes available one step forward.
 		}
 	}
 
