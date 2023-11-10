@@ -74,7 +74,7 @@ function App() {
 					Show cell ID?
 				</Checkbox>
 				<Button type="primary" onClick={() => gameRef.current.spawnFood()}>
-					Spawn food
+					Spawn random food in random cell
 				</Button>
 
 				<Select
