@@ -8,8 +8,8 @@ function Cell({ x, y, color, showCellId, animationClass = '' }) {
 		<div
 			className={`${styles.cell} ${animation[animationClass]}`}
 			style={{
-				top: `${x * CELL_DIMENSION}px`,
-				left: `${y * CELL_DIMENSION}px`,
+				left: `${x * CELL_DIMENSION}px`,
+				top: `${y * CELL_DIMENSION}px`,
 				height: `${CELL_DIMENSION}px`,
 				width: `${CELL_DIMENSION}px`,
 				backgroundColor: color,
