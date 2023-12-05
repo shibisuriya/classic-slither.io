@@ -1,4 +1,5 @@
-import { NUMBER_OF_COLUMNS, NUMBER_OF_ROWS, DIRECTIONS } from './constants';
+import { NUMBER_OF_COLUMNS, NUMBER_OF_ROWS, DIRECTIONS, FOOD_TYPES } from './constants';
+import { generateRandomNumber } from './utils';
 
 const isCellValid = (i, j) => {
 	return i < NUMBER_OF_ROWS && j < NUMBER_OF_COLUMNS && i >= 0 && j >= 0;
@@ -35,4 +36,24 @@ const getOppositeDirection = (direction) => {
 	}
 };
 
-export { getOppositeDirection, generateValue, generateKey, isCellValid };
+const whichFoodToSpawn = () => {
+	const percentage = Object.values(FOOD_TYPES).reduce((total, { chance }) => {
+		total += chance;
+		return total;
+	}, 0);
+	if (percentage != 100) {
+		throw new Error('The sum of all chances should be 100.');
+	}
+	const randomNumber = generateRandomNumber(100) + 1; // Since it will generate a random number between 0 to 99, 100 is not included, I added 1.
+	let cumulativeChance = 0;
+	for (const key in FOOD_TYPES) {
+		cumulativeChance += FOOD_TYPES[key].chance;
+		if (randomNumber < cumulativeChance) {
+			return FOOD_TYPES[key];
+		}
+	}
+	// TODO: There is something wrong with this function, returning undefined sometimes.
+	return FOOD_TYPES.FROG;
+};
+
+export { getOppositeDirection, generateValue, generateKey, isCellValid, whichFoodToSpawn };

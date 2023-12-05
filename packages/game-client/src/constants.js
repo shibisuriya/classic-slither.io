@@ -1,8 +1,8 @@
 import { findKeyByValue, areValuesUnique } from './utils';
 
 // in px (pixels)
-const GRID_WIDTH = 30 * 13;
-const GRID_HEIGHT = 30 * 13;
+const GRID_WIDTH = 30 * 30;
+const GRID_HEIGHT = 30 * 30;
 const CELL_DIMENSION = 30;
 
 export const allSnakesSelectOption = { id: 'All' };
