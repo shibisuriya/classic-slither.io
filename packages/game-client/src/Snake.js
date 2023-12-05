@@ -8,6 +8,7 @@ class Snake {
 		// perform computation on this data.
 		this.bodyColor = snake.bodyColor;
 		this.headColor = snake.headColor;
+		this.defaultTick = snake.defaultTick;
 		this.keys = snake.cells.reduce((keys, cell) => {
 			const { x, y } = cell;
 			keys.push(generateKey(x, y));

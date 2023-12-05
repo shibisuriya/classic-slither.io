@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import Grid from './Grid';
-import Game from './Game.js';
+import Grid from './Grid.jsx';
+import { grid } from './Grid.js';
 
 const useGame = () => {
 	const [cells, setCells] = useState([]);
@@ -10,8 +10,7 @@ const useGame = () => {
 	};
 
 	useEffect(() => {
-		const game = new Game();
-		game.updateCells = updateCells;
+		grid.updateCells = updateCells;
 	}, []);
 
 	return { cells };
