@@ -3,7 +3,7 @@ import Grid from './Grid.jsx';
 import { grid } from './Grid.js';
 
 const useGame = () => {
-	const [cells, setCells] = useState([]);
+	const [cells, setCells] = useState(grid.getAllCells());
 
 	const updateCells = (cells) => {
 		setCells(cells);

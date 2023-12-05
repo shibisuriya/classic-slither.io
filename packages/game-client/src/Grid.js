@@ -3,6 +3,7 @@ import { DIRECTIONS, SNAKE_TICKS, FOOD_TICKS, FOOD_TYPES } from './constants';
 import { initialSnakesState, GRID_MAP, initialFoodState } from './computed';
 import { generateRandomNumber } from './utils';
 import { generateKey, whichFoodToSpawn } from './helpers';
+import { SNAKE_COLLIDED_WITH_WALL, SNAKE_SUCIDE } from './errors';
 
 class Grid {
 	constructor() {
@@ -85,14 +86,26 @@ class Grid {
 		}
 	}
 
-	removeSnakeFromTrack(trackId, snakeId) {
-		delete this.tracks[trackId][snakeId];
+	removeSnakeFromTrack({ trackId, snakeId }) {
+		if (trackId) {
+			delete this.tracks[trackId][snakeId];
+		} else {
+			// Find track id, since it was not supplied.
+			for (const track of Object.values(this.tracks)) {
+				if (snakeId in track) {
+					delete track[snakeId];
+					return;
+				}
+			}
+			throw new Error('The snake you requested to remove does not belong to any track!');
+		}
 	}
 
 	initializeSnakes() {
 		this.snakes = {};
 		for (const [snakeId, initialSnakeState] of Object.entries(initialSnakesState)) {
 			const snake = new Snake(initialSnakeState);
+			snake.die = () => this.removeSnakeFromGrid(snakeId);
 			this.snakes[snakeId] = snake;
 			const trackId = snake.defaultTick;
 			this.addSnakeToTrack(trackId, snakeId);
@@ -103,27 +116,70 @@ class Grid {
 		this.food = initialFoodState;
 	}
 
+	removeSnakeFromGrid(snakeId) {
+		delete this.snakes[snakeId];
+		this.removeSnakeFromTrack({ snakeId });
+	}
+
 	attachTickers() {
 		this.timers = [];
 
 		for (const tick of Object.values(SNAKE_TICKS)) {
 			const { DURATION: duration } = tick;
 			const timer = setInterval(() => {
-				Object.values(this.tracks[tick.TYPE]).forEach((snake) => {
-					snake.move();
-					this.updateCells(this.getAllCells());
+				const updatedPositions = {};
+				Object.entries(this.tracks[tick.TYPE]).forEach(([snakeId, snake]) => {
+					try {
+						updatedPositions[snakeId] = snake.move(); // Contains newHead and hash.;
+					} catch (err) {
+						if (err === SNAKE_COLLIDED_WITH_WALL || err === SNAKE_SUCIDE) {
+							snake.die();
+						} else {
+							// We encounted some other problem, so throw upward towards
+							// the error bounddary.
+							throw err;
+						}
+						// A snake object is aware of,
+						// 1) The map's boundaries.
+						// 2) Itself, it knows when it has bite itself.
+						// A snake object is not aware of other snakes.
+						// Imagine each snake having it's own grid and
+						// moving in its own grid without the knowledge about
+						// food and other snakes. The `grid` (this) object is
+						// what let's individual snakes communicate
+						// with other snakes and food.
+						// This behavior is intentional, to make the gameplay fair / correct
+						// we have to perform parallel computation not serial computation.
+						// That is we have to make each snake move 1 step forward and
+						// check if the move is valid or not, or what happened in that particular move.
+						// For that reason, advanced computation such as,
+						// 1) Intake of food.
+						// 2) Snake collision with other snake.
+						// 3) Head to head snake collision.
+						// are done below.
+					}
 				});
-			}, duration);
-			this.timers.push(timer);
-		}
 
-		for (const { DURATION: duration } of Object.values(FOOD_TICKS)) {
-			const timer = setInterval(() => {
-				this.spawnFood();
+				// for (const snake of newPositions) {
+				// 	const [head] = snake.data.keys;
+				// 	const { x, y } = snake.data.hash[head];
+				// 	if (!isCellValid(x, y)) {
+				// 		this.removeSnakeFromTrack(snake.id);
+				// 	}
+				// }
+
 				this.updateCells(this.getAllCells());
 			}, duration);
 			this.timers.push(timer);
 		}
+
+		// for (const { DURATION: duration } of Object.values(FOOD_TICKS)) {
+		// 	const timer = setInterval(() => {
+		// 		this.spawnFood();
+		// 		this.updateCells(this.getAllCells());
+		// 	}, duration);
+		// 	this.timers.push(timer);
+		// }
 	}
 
 	addFoodToGrid(x, y, foodType) {

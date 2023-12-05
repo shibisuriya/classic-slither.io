@@ -1,6 +1,7 @@
-import { generateKey, getOppositeDirection } from './helpers';
+import { generateKey, getOppositeDirection, isCellValid } from './helpers';
 
 import { DIRECTIONS } from './constants';
+import { SNAKE_COLLIDED_WITH_WALL, SNAKE_SUCIDE } from './errors';
 
 class Snake {
 	constructor(snake) {
@@ -35,7 +36,16 @@ class Snake {
 	}
 
 	addNewHead(newHead) {
-		const newKey = generateKey(newHead.x, newHead.y);
+		if (!isCellValid(newHead.x, newHead.y)) {
+			throw SNAKE_COLLIDED_WITH_WALL;
+		}
+
+		const newKey = generateKey(newHead.x, newHead.y); // This method throws error.
+
+		if (newKey in this.hash) {
+			throw SNAKE_SUCIDE;
+		}
+
 		this.keys.unshift(newKey);
 		this.hash[newKey] = newHead;
 	}
@@ -48,46 +58,64 @@ class Snake {
 	move() {
 		switch (this.direction) {
 			case DIRECTIONS.DOWN:
-				this.moveDown();
-				break;
+				return this.moveDown();
 			case DIRECTIONS.UP:
-				this.moveUp();
-				break;
+				return this.moveUp();
 			case DIRECTIONS.LEFT:
-				this.moveLeft();
-				break;
+				return this.moveLeft();
 			case DIRECTIONS.RIGHT:
-				this.moveRight();
-				break;
+				return this.moveRight();
+			default:
+				throw new Error(`Invalid direction ${this.direction}.`);
 		}
 	}
 
 	moveLeft() {
+		this.removeTail(); // Remove the tail first since, the new head could be in the tail as well.
+
 		const head = this.getHead();
 		const newHead = { x: head.x - 1, y: head.y };
 		this.addNewHead(newHead);
-		this.removeTail();
+
+		return this.getHeadAndHash();
 	}
 
 	moveRight() {
+		this.removeTail();
+
 		const head = this.getHead();
 		const newHead = { x: head.x + 1, y: head.y };
 		this.addNewHead(newHead);
-		this.removeTail();
+
+		return this.getHeadAndHash();
 	}
 
 	moveUp() {
+		this.removeTail();
+
 		const head = this.getHead();
 		const newHead = { x: head.x, y: head.y - 1 };
 		this.addNewHead(newHead);
-		this.removeTail();
+
+		return this.getHeadAndHash();
+	}
+
+	getHeadAndHash() {
+		const [headKey] = this.keys;
+		return {
+			headKey,
+			hash: this.hash,
+		};
 	}
 
 	moveDown() {
+		this.removeTail();
+
 		const head = this.getHead();
 		const newHead = { x: head.x, y: head.y + 1 };
 		this.addNewHead(newHead);
-		this.removeTail();
+
+		return this.getHeadAndHash();
 	}
 
 	getHead() {
