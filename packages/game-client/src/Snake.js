@@ -2,6 +2,7 @@ import { generateKey, getOppositeDirection, isCellValid } from './helpers';
 
 import { DIRECTIONS, FOOD_EFFECTS, FOOD_TYPES } from './constants';
 import { SNAKE_COLLIDED_WITH_WALL, SNAKE_SUCIDE } from './errors';
+import cloneDeep from 'lodash/cloneDeep';
 
 class Snake {
 	constructor(snake) {
@@ -23,6 +24,31 @@ class Snake {
 		}, {});
 
 		this.direction = snake.direction;
+		this.buffs = {};
+	}
+
+	addBuff(type, buff) {
+		switch (type) {
+			case FOOD_EFFECTS.SPEED:
+				this.changeSpeed(buff.tick);
+				break;
+			default:
+				throw new Error(`Unknown buff ${type}...`);
+		}
+
+		this.buffs[type] = cloneDeep(buff);
+	}
+
+	removeBuff(type) {
+		switch (type) {
+			case FOOD_EFFECTS.SPEED:
+				this.changeSpeed(this.defaultTick);
+				break;
+			default:
+				throw new Error(`Unknown buff ${type} asked to removed!`);
+		}
+
+		delete this.buffs[type];
 	}
 
 	consume({ type: foodType }) {
@@ -34,6 +60,7 @@ class Snake {
 					this.growFromBehind(effect.units);
 					break;
 				case FOOD_EFFECTS.SPEED:
+					this.addBuff(type, effect);
 					break;
 				default:
 					throw new Error('Unknown food type consumed by the food.');
@@ -168,6 +195,23 @@ class Snake {
 				break;
 			default:
 				throw new Error(`Invalid direction ${this.direction}.`);
+		}
+
+		// Some buffs last for a certain number of ticks only.
+		// Handle that here.
+		for (const [type, buff] of Object.entries(this.buffs)) {
+			switch (type) {
+				case FOOD_EFFECTS.SPEED:
+					if (buff.lastsFor > 0) {
+						buff.lastsFor--;
+					} else {
+						this.changeSpeed(this.defaultTick);
+						this.removeBuff(type);
+					}
+					break;
+				default:
+					throw new Error('Unknown buff...');
+			}
 		}
 	}
 

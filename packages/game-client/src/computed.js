@@ -31,7 +31,7 @@ const initialSnakesState = {
 	},
 	2: {
 		headColor: 'blue',
-		bodyColor: 'green',
+		bodyColor: 'orange',
 		cells: [
 			{ x: 3, y: 6 }, // Head
 			{ x: 3, y: 5 },

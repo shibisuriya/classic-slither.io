@@ -101,17 +101,25 @@ class Grid {
 		}
 	}
 
+	switchSnakeTrack({ trackId, snakeId }) {
+		this.removeSnakeFromTrack({ snakeId });
+		this.addSnakeToTrack(trackId, snakeId);
+	}
+
 	initializeSnakes() {
 		this.snakes = {};
 		for (const [snakeId, initialSnakeState] of Object.entries(initialSnakesState)) {
 			const snake = new Snake(initialSnakeState);
 			snake.die = () => this.removeSnakeFromGrid(snakeId);
+			snake.changeSpeed = (trackId) => this.switchSnakeTrack.bind(this)({ snakeId, trackId });
+
 			// Supply some utils to each snake.
 			snake.grid = {
 				isFoodCell: this.isFoodCell.bind(this),
 				removeFoodFromGrid: this.removeFoodFromGrid.bind(this),
 				getCellsOccupiedBySnakes: this.getCellsOccupiedBySnakes.bind(this),
 			};
+
 			this.snakes[snakeId] = snake;
 			const trackId = snake.defaultTick;
 			this.addSnakeToTrack(trackId, snakeId);
