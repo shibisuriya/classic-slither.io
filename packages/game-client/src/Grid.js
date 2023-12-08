@@ -2,8 +2,9 @@ import Snake from './Snake';
 import { DIRECTIONS, SNAKE_TICKS, FOOD_TICKS, FOOD_TYPES } from './constants';
 import { initialSnakesState, GRID_MAP, initialFoodState } from './computed';
 import { generateRandomNumber } from './utils';
-import { generateKey, whichFoodToSpawn } from './helpers';
+import { generateKey, isCellValid, whichFoodToSpawn } from './helpers';
 import { SNAKE_COLLIDED_WITH_WALL, SNAKE_SUCIDE } from './errors';
+import cloneDeep from 'lodash/cloneDeep';
 
 class Grid {
 	constructor() {
@@ -110,7 +111,15 @@ class Grid {
 		this.snakes = {};
 		for (const [snakeId, initialSnakeState] of Object.entries(initialSnakesState)) {
 			const snake = new Snake(initialSnakeState);
-			snake.die = () => this.removeSnakeFromGrid(snakeId);
+			snake.die = () => {
+				// When a snake dies his body is converted to food named fillets.
+				const removedSnake = this.removeSnakeFromGrid(snakeId);
+				const { hash } = removedSnake;
+				for (const cell of Object.values(hash)) {
+					const { x, y } = cell;
+					this.addFoodToGrid(x, y, FOOD_TYPES.FILLET.TYPE);
+				}
+			};
 			snake.changeSpeed = (trackId) => this.switchSnakeTrack.bind(this)({ snakeId, trackId });
 
 			// Supply some utils to each snake.
@@ -131,8 +140,13 @@ class Grid {
 	}
 
 	removeSnakeFromGrid(snakeId) {
-		delete this.snakes[snakeId];
+		const { keys, hash } = this.snakes[snakeId];
+		const removedSnake = { keys, hash };
+
 		this.removeSnakeFromTrack({ snakeId });
+		delete this.snakes[snakeId];
+
+		return cloneDeep(removedSnake);
 	}
 
 	attachTickers() {
@@ -270,8 +284,12 @@ class Grid {
 	}
 
 	isFoodCell(x, y) {
-		const key = generateKey(x, y);
-		return key in this.food;
+		if (isCellValid(x, y)) {
+			const key = generateKey(x, y);
+			return key in this.food;
+		} else {
+			return false;
+		}
 	}
 
 	getCellsOccupiedBySnakes() {
