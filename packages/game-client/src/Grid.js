@@ -114,10 +114,15 @@ class Grid {
 			snake.die = () => {
 				// When a snake dies his body is converted to food named fillets.
 				const removedSnake = this.removeSnakeFromGrid(snakeId);
-				const { hash } = removedSnake;
-				for (const cell of Object.values(hash)) {
+				const { hash, headKey, keys } = removedSnake;
+				for (const key of keys) {
+					const cell = hash[key];
 					const { x, y } = cell;
-					this.addFoodToGrid(x, y, FOOD_TYPES.FILLET.TYPE);
+					// Skip the head of the dead snake for now.
+					// TODO: Implement approrpiate logic for this.
+					if (headKey !== key) {
+						this.addFoodToGrid(x, y, FOOD_TYPES.FILLET.TYPE);
+					}
 				}
 			};
 			snake.changeSpeed = (trackId) => this.switchSnakeTrack.bind(this)({ snakeId, trackId });
@@ -140,8 +145,9 @@ class Grid {
 	}
 
 	removeSnakeFromGrid(snakeId) {
-		const { keys, hash } = this.snakes[snakeId];
-		const removedSnake = { keys, hash };
+		const snake = this.snakes[snakeId];
+		const { headKey, hash } = snake.getHeadAndHash();
+		const removedSnake = { headKey, hash, keys: snake.keys };
 
 		this.removeSnakeFromTrack({ snakeId });
 		delete this.snakes[snakeId];
@@ -269,7 +275,12 @@ class Grid {
 	}
 
 	addFoodToGrid(x, y, foodType) {
-		this.food[generateKey(x, y)] = { type: foodType, x, y };
+		const key = generateKey(x, y);
+		if (!(key in this.getCellsOccupiedBySnakes()) && !(key in this.food)) {
+			this.food[key] = { type: foodType, x, y };
+		} else {
+			throw new Error('Trying to spawn a food in a cell that is occupied by either a snake or a food.');
+		}
 	}
 
 	removeFoodFromGrid(x, y) {
