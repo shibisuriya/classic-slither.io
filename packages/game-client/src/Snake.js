@@ -1,6 +1,6 @@
 import { generateKey, getOppositeDirection, isCellValid } from './helpers';
 
-import { DIRECTIONS } from './constants';
+import { DIRECTIONS, FOOD_EFFECTS, FOOD_TYPES } from './constants';
 import { SNAKE_COLLIDED_WITH_WALL, SNAKE_SUCIDE } from './errors';
 
 class Snake {
@@ -23,6 +23,103 @@ class Snake {
 		}, {});
 
 		this.direction = snake.direction;
+	}
+
+	consume({ type: foodType }) {
+		const food = FOOD_TYPES[foodType];
+
+		for (const [type, effect] of Object.entries(food.effects)) {
+			switch (type) {
+				case FOOD_EFFECTS.GROW:
+					this.growFromBehind(effect.units);
+					break;
+				case FOOD_EFFECTS.SPEED:
+					break;
+				default:
+					throw new Error('Unknown food type consumed by the food.');
+			}
+		}
+	}
+
+	growFromBehind(units = 1) {
+		for (let i = 1; i <= units; i++) {
+			// Add a cell to the tail.
+			// Determine in which direction to grow first :(
+
+			const tail = this.getTail();
+			const penultimateCell = this.getPenultimateCell();
+
+			const { x: x2, y: y2 } = tail;
+			const { x: x1, y: y1 } = penultimateCell;
+
+			let newTail;
+			let newTailKey;
+
+			if (x1 - x2 === 1 && y2 - y1 === 0) {
+				// up
+				newTail = { x: x2 - 1, y: y1 };
+				newTailKey = generateKey(newTail.x, newTail.y, true); // Skip validation
+			} else if (x1 - x2 === -1 && y2 - y1 === 0) {
+				// down
+				newTail = { x: x2 + 1, y: y1 };
+				newTailKey = generateKey(newTail.x, newTail.y, true);
+			} else if (y1 - y2 === 1 && x2 - x1 === 0) {
+				// right
+				newTail = { x: x1, y: y2 - 1 };
+				newTailKey = generateKey(newTail.x, newTail.y, true);
+			} else if (y1 - y2 === -1 && x2 - x1 === 0) {
+				// left
+				newTail = { x: x1, y: y2 + 1 };
+				newTailKey = generateKey(newTail.x, newTail.y, true);
+			} else {
+				throw new Error("Snake's data is corrupt!, unable to find the direction.");
+			}
+
+			// Now that we know the new tail, decide wheather to add it to the snake or not.
+			// Don't add tail if,
+			// 1) Is part of the wall.
+			// 2) Is part of self.
+			// 3) Is part of an opponent.
+
+			const addTail = () => {
+				this.keys.push(newTailKey);
+				this.hash[newTailKey] = newTail;
+			};
+
+			if (this.grid.isFoodCell(newTail.x, newTail.y)) {
+				// Remove the food if the added tail is occupied by the
+				// food.
+				this.grid.removeFoodFromGrid(newTail.x, newTail.y);
+				addTail();
+			} else if (isCellValid(newTail.x, newTail.y) && !(newTail in this.grid.getCellsOccupiedBySnakes())) {
+				addTail();
+			} else {
+				// The cell before the tail cell is already occupied by either,
+				// the opponent, self or the wall... So break out of the loop, can't
+				// add any cells further.
+				break;
+			}
+		}
+	}
+
+	getPenultimateCell() {
+		if (this.keys.length >= 2) {
+			// penultimate means 'last but one in a series of things; second last.'
+			const penultimateKey = this.keys[this.keys.length - 2];
+			const penultimateCell = this.hash[penultimateKey];
+			return penultimateCell;
+		} else {
+			throw new Error("The snake has only a head! it doesn't even have a neck.");
+		}
+	}
+
+	getTail() {
+		if (this.keys.length > 0) {
+			const tailKey = this.keys[this.keys.length - 1];
+			return this.hash[tailKey];
+		} else {
+			throw new Error("The snake doesn't have a body, so unable to select the tailKey");
+		}
 	}
 
 	changeDirection(direction) {
@@ -108,7 +205,9 @@ class Snake {
 
 	getHeadAndHash() {
 		const [headKey] = this.keys;
+		const head = this.hash[headKey];
 		return {
+			head,
 			headKey,
 			hash: this.hash,
 		};

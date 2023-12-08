@@ -106,6 +106,12 @@ class Grid {
 		for (const [snakeId, initialSnakeState] of Object.entries(initialSnakesState)) {
 			const snake = new Snake(initialSnakeState);
 			snake.die = () => this.removeSnakeFromGrid(snakeId);
+			// Supply some utils to each snake.
+			snake.grid = {
+				isFoodCell: this.isFoodCell.bind(this),
+				removeFoodFromGrid: this.removeFoodFromGrid.bind(this),
+				getCellsOccupiedBySnakes: this.getCellsOccupiedBySnakes.bind(this),
+			};
 			this.snakes[snakeId] = snake;
 			const trackId = snake.defaultTick;
 			this.addSnakeToTrack(trackId, snakeId);
@@ -128,11 +134,20 @@ class Grid {
 			const { DURATION: duration } = tick;
 			const timer = setInterval(() => {
 				const movedSnakesHash = {};
+				const fedSnakesHash = {};
 
 				Object.entries(this.tracks[tick.TYPE]).forEach(([snakeId, snake]) => {
 					try {
 						snake.move(); // At this point in time the grid data will be inconsistent.
-						movedSnakesHash[snakeId] = snake.getHeadAndHash();
+						const headAndHash = snake.getHeadAndHash();
+						movedSnakesHash[snakeId] = headAndHash;
+
+						// Just note down wheather a snake has consume a food in this tick.
+						const { head } = headAndHash;
+						if (this.isFoodCell(head.x, head.y)) {
+							const food = this.removeFoodFromGrid(head.x, head.y);
+							fedSnakesHash[snakeId] = { snake, food };
+						}
 					} catch (err) {
 						if (err === SNAKE_COLLIDED_WITH_WALL || err === SNAKE_SUCIDE) {
 							snake.die();
@@ -212,7 +227,9 @@ class Grid {
 
 				// To handle consumption of food.
 
-				for (let i = 0; i < movedSnakes.length; i++) {}
+				Object.values(fedSnakesHash).forEach(({ snake, food }) => {
+					snake.consume(food);
+				});
 
 				// Grid data becomes consistent here, so update the UI.
 				this.updateCells(this.getAllCells());
@@ -220,13 +237,13 @@ class Grid {
 			this.timers.push(timer);
 		}
 
-		// for (const { DURATION: duration } of Object.values(FOOD_TICKS)) {
-		// 	const timer = setInterval(() => {
-		// 		this.spawnFood();
-		// 		this.updateCells(this.getAllCells());
-		// 	}, duration);
-		// 	this.timers.push(timer);
-		// }
+		for (const { DURATION: duration } of Object.values(FOOD_TICKS)) {
+			const timer = setInterval(() => {
+				this.spawnFood();
+				this.updateCells(this.getAllCells());
+			}, duration);
+			this.timers.push(timer);
+		}
 	}
 
 	addFoodToGrid(x, y, foodType) {
@@ -234,18 +251,23 @@ class Grid {
 	}
 
 	removeFoodFromGrid(x, y) {
-		const key = generateKey(x, y);
-		if (key in this.food) {
-			const removedFood = this.food[generateKey(x, y)];
-			delete this.food[generateKey(x, y)];
+		if (this.isFoodCell(x, y)) {
+			const key = generateKey(x, y);
+			const removedFood = this.food[key];
+			delete this.food[key];
 			return removedFood;
 		} else {
 			throw new Error(`Unable to remove food, since there is no food at ${x}-${y}.`);
 		}
 	}
 
-	spawnFood() {
-		const cellsOccupiedBySnakes = Object.values(this.snakes).reduce((cells, snake) => {
+	isFoodCell(x, y) {
+		const key = generateKey(x, y);
+		return key in this.food;
+	}
+
+	getCellsOccupiedBySnakes() {
+		return Object.values(this.snakes).reduce((cells, snake) => {
 			// Make sure there is integrity in snake's data before invoking this
 			// method since it throws an error if two snakes occupy a single cell...
 			const { hash } = snake;
@@ -258,6 +280,10 @@ class Grid {
 			// }
 			return Object.assign(cells, hash);
 		}, {});
+	}
+
+	spawnFood() {
+		const cellsOccupiedBySnakes = this.getCellsOccupiedBySnakes();
 
 		const emptyCells = {};
 

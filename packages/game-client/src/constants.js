@@ -39,9 +39,9 @@ const SNAKE_TICKS = {
 };
 
 const FOOD_TICKS = {
-	TWO_TENTH: {
-		TYPE: 'TWO_TENTH',
-		DURATION: 1000 * 1,
+	ONE_TENTH: {
+		TYPE: 'ONE_TENTH',
+		DURATION: 1000 * 0.1,
 	},
 };
 
