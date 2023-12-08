@@ -2,8 +2,9 @@ import Snake from './Snake';
 import { DIRECTIONS, SNAKE_TICKS, FOOD_TICKS, FOOD_TYPES } from './constants';
 import { initialSnakesState, GRID_MAP, initialFoodState } from './computed';
 import { generateRandomNumber } from './utils';
-import { generateKey, whichFoodToSpawn } from './helpers';
+import { generateKey, isCellValid, whichFoodToSpawn } from './helpers';
 import { SNAKE_COLLIDED_WITH_WALL, SNAKE_SUCIDE } from './errors';
+import cloneDeep from 'lodash/cloneDeep';
 
 class Grid {
 	constructor() {
@@ -101,11 +102,38 @@ class Grid {
 		}
 	}
 
+	switchSnakeTrack({ trackId, snakeId }) {
+		this.removeSnakeFromTrack({ snakeId });
+		this.addSnakeToTrack(trackId, snakeId);
+	}
+
 	initializeSnakes() {
 		this.snakes = {};
 		for (const [snakeId, initialSnakeState] of Object.entries(initialSnakesState)) {
 			const snake = new Snake(initialSnakeState);
-			snake.die = () => this.removeSnakeFromGrid(snakeId);
+			snake.die = () => {
+				// When a snake dies his body is converted to food named fillets.
+				const removedSnake = this.removeSnakeFromGrid(snakeId);
+				const { hash, headKey, keys } = removedSnake;
+				for (const key of keys) {
+					const cell = hash[key];
+					const { x, y } = cell;
+					// Skip the head of the dead snake for now.
+					// TODO: Implement approrpiate logic for this.
+					if (headKey !== key) {
+						this.addFoodToGrid(x, y, FOOD_TYPES.FILLET.TYPE);
+					}
+				}
+			};
+			snake.changeSpeed = (trackId) => this.switchSnakeTrack.bind(this)({ snakeId, trackId });
+
+			// Supply some utils to each snake.
+			snake.grid = {
+				isFoodCell: this.isFoodCell.bind(this),
+				removeFoodFromGrid: this.removeFoodFromGrid.bind(this),
+				getCellsOccupiedBySnakes: this.getCellsOccupiedBySnakes.bind(this),
+			};
+
 			this.snakes[snakeId] = snake;
 			const trackId = snake.defaultTick;
 			this.addSnakeToTrack(trackId, snakeId);
@@ -117,8 +145,14 @@ class Grid {
 	}
 
 	removeSnakeFromGrid(snakeId) {
-		delete this.snakes[snakeId];
+		const snake = this.snakes[snakeId];
+		const { headKey, hash } = snake.getHeadAndHash();
+		const removedSnake = { headKey, hash, keys: snake.keys };
+
 		this.removeSnakeFromTrack({ snakeId });
+		delete this.snakes[snakeId];
+
+		return cloneDeep(removedSnake);
 	}
 
 	attachTickers() {
@@ -127,10 +161,21 @@ class Grid {
 		for (const tick of Object.values(SNAKE_TICKS)) {
 			const { DURATION: duration } = tick;
 			const timer = setInterval(() => {
-				const updatedPositions = {};
+				const movedSnakesHash = {};
+				const fedSnakesHash = {};
+
 				Object.entries(this.tracks[tick.TYPE]).forEach(([snakeId, snake]) => {
 					try {
-						updatedPositions[snakeId] = snake.move(); // Contains newHead and hash.;
+						snake.move(); // At this point in time the grid data will be inconsistent.
+						const headAndHash = snake.getHeadAndHash();
+						movedSnakesHash[snakeId] = headAndHash;
+
+						// Just note down wheather a snake has consume a food in this tick.
+						const { head } = headAndHash;
+						if (this.isFoodCell(head.x, head.y)) {
+							const food = this.removeFoodFromGrid(head.x, head.y);
+							fedSnakesHash[snakeId] = { snake, food };
+						}
 					} catch (err) {
 						if (err === SNAKE_COLLIDED_WITH_WALL || err === SNAKE_SUCIDE) {
 							snake.die();
@@ -160,45 +205,106 @@ class Grid {
 					}
 				});
 
-				// for (const snake of newPositions) {
-				// 	const [head] = snake.data.keys;
-				// 	const { x, y } = snake.data.hash[head];
-				// 	if (!isCellValid(x, y)) {
-				// 		this.removeSnakeFromTrack(snake.id);
-				// 	}
-				// }
+				const idleSnakesHash = Object.entries(this.snakes).reduce((hash, [snakeId, snake]) => {
+					if (!(snakeId in movedSnakesHash)) {
+						hash[snakeId] = snake.getHeadAndHash();
+					}
+					return hash;
+				}, {});
 
+				const idleSnakes = Object.entries(idleSnakesHash);
+				const movedSnakes = Object.entries(movedSnakesHash);
+
+				const snakesToRemove = {};
+
+				// Handle
+				// 1) Two snake colliding head to head.
+				// 2) A snake colliding into another snake.
+				for (let i = 0; i < movedSnakes.length; i++) {
+					const [snakeOneId, { headKey: snakeOneHeadKey, hash: snakeOneHash }] = movedSnakes[i];
+					for (let j = i + 1; j < movedSnakes.length; j++) {
+						const [snakeTwoId, { headKey: snakeTwoHeadKey, hash: snakeTwoHash }] = movedSnakes[j];
+						if (snakeOneHeadKey === snakeTwoHeadKey) {
+							snakesToRemove[snakeOneId] = this.snakes[snakeOneId];
+							snakesToRemove[snakeTwoId] = this.snakes[snakeTwoId];
+						} else if (snakeOneHeadKey in snakeTwoHash) {
+							snakesToRemove[snakeOneId] = this.snakes[snakeOneId];
+						} else if (snakeTwoHeadKey in snakeOneHash) {
+							snakesToRemove[snakeTwoId] = this.snakes[snakeTwoId];
+						}
+					}
+
+					// Handle collision of a snake that has moved
+					// in this particular tick with a snake that
+					// doesn't operate in this tick.
+
+					for (let k = 0; k < idleSnakes.length; k++) {
+						const [snakeTwoId, { headKey: snakeTwoHeadKey, hash: snakeTwoHash }] = idleSnakes[k];
+						if (snakeOneHeadKey === snakeTwoHeadKey) {
+							snakesToRemove[snakeOneId] = this.snakes[snakeOneId];
+							snakesToRemove[snakeTwoId] = this.snakes[snakeTwoId];
+						} else if (snakeOneHeadKey in snakeTwoHash) {
+							snakesToRemove[snakeOneId] = this.snakes[snakeOneId];
+						}
+						// No need to to check snakeTwo's head colliding on snakeOne's body
+						// since snakeTwo is idle in this tick.
+					}
+				}
+
+				Object.values(snakesToRemove).forEach((snake) => snake.die());
+
+				// To handle consumption of food.
+
+				Object.values(fedSnakesHash).forEach(({ snake, food }) => {
+					snake.consume(food);
+				});
+
+				// Grid data becomes consistent here, so update the UI.
 				this.updateCells(this.getAllCells());
 			}, duration);
 			this.timers.push(timer);
 		}
 
-		// for (const { DURATION: duration } of Object.values(FOOD_TICKS)) {
-		// 	const timer = setInterval(() => {
-		// 		this.spawnFood();
-		// 		this.updateCells(this.getAllCells());
-		// 	}, duration);
-		// 	this.timers.push(timer);
-		// }
+		for (const { DURATION: duration } of Object.values(FOOD_TICKS)) {
+			const timer = setInterval(() => {
+				this.spawnFood();
+				this.updateCells(this.getAllCells());
+			}, duration);
+			this.timers.push(timer);
+		}
 	}
 
 	addFoodToGrid(x, y, foodType) {
-		this.food[generateKey(x, y)] = { type: foodType, x, y };
+		const key = generateKey(x, y);
+		if (!(key in this.getCellsOccupiedBySnakes()) && !(key in this.food)) {
+			this.food[key] = { type: foodType, x, y };
+		} else {
+			throw new Error('Trying to spawn a food in a cell that is occupied by either a snake or a food.');
+		}
 	}
 
 	removeFoodFromGrid(x, y) {
-		const key = generateKey(x, y);
-		if (key in this.food) {
-			const removedFood = this.food[generateKey(x, y)];
-			delete this.food[generateKey(x, y)];
+		if (this.isFoodCell(x, y)) {
+			const key = generateKey(x, y);
+			const removedFood = this.food[key];
+			delete this.food[key];
 			return removedFood;
 		} else {
 			throw new Error(`Unable to remove food, since there is no food at ${x}-${y}.`);
 		}
 	}
 
-	spawnFood() {
-		const cellsOccupiedBySnakes = Object.values(this.snakes).reduce((cells, snake) => {
+	isFoodCell(x, y) {
+		if (isCellValid(x, y)) {
+			const key = generateKey(x, y);
+			return key in this.food;
+		} else {
+			return false;
+		}
+	}
+
+	getCellsOccupiedBySnakes() {
+		return Object.values(this.snakes).reduce((cells, snake) => {
 			// Make sure there is integrity in snake's data before invoking this
 			// method since it throws an error if two snakes occupy a single cell...
 			const { hash } = snake;
@@ -211,6 +317,10 @@ class Grid {
 			// }
 			return Object.assign(cells, hash);
 		}, {});
+	}
+
+	spawnFood() {
+		const cellsOccupiedBySnakes = this.getCellsOccupiedBySnakes();
 
 		const emptyCells = {};
 

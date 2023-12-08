@@ -27,11 +27,11 @@ const initialSnakesState = {
 			{ x: 0, y: 0 }, // Tail
 		],
 		direction: DIRECTIONS.DOWN,
-		defaultTick: SNAKE_TICKS.QUARTER.TYPE,
+		defaultTick: SNAKE_TICKS.ONE.TYPE,
 	},
 	2: {
 		headColor: 'blue',
-		bodyColor: 'green',
+		bodyColor: 'orange',
 		cells: [
 			{ x: 3, y: 6 }, // Head
 			{ x: 3, y: 5 },
@@ -42,7 +42,7 @@ const initialSnakesState = {
 			{ x: 3, y: 0 }, // Tail
 		],
 		direction: DIRECTIONS.DOWN,
-		defaultTick: SNAKE_TICKS.HALF.TYPE,
+		defaultTick: SNAKE_TICKS.QUARTER.TYPE,
 	},
 	3: {
 		headColor: 'purple',
@@ -57,7 +57,7 @@ const initialSnakesState = {
 			{ x: 5, y: 0 }, // Tail
 		],
 		direction: DIRECTIONS.DOWN,
-		defaultTick: SNAKE_TICKS.ONE_TENTH.TYPE,
+		defaultTick: SNAKE_TICKS.HALF.TYPE,
 	},
 	4: {
 		headColor: 'red',
