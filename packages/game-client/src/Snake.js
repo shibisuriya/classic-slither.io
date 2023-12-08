@@ -58,13 +58,17 @@ class Snake {
 	move() {
 		switch (this.direction) {
 			case DIRECTIONS.DOWN:
-				return this.moveDown();
+				this.moveDown();
+				break;
 			case DIRECTIONS.UP:
-				return this.moveUp();
+				this.moveUp();
+				break;
 			case DIRECTIONS.LEFT:
-				return this.moveLeft();
+				this.moveLeft();
+				break;
 			case DIRECTIONS.RIGHT:
-				return this.moveRight();
+				this.moveRight();
+				break;
 			default:
 				throw new Error(`Invalid direction ${this.direction}.`);
 		}
@@ -76,8 +80,6 @@ class Snake {
 		const head = this.getHead();
 		const newHead = { x: head.x - 1, y: head.y };
 		this.addNewHead(newHead);
-
-		return this.getHeadAndHash();
 	}
 
 	moveRight() {
@@ -86,8 +88,6 @@ class Snake {
 		const head = this.getHead();
 		const newHead = { x: head.x + 1, y: head.y };
 		this.addNewHead(newHead);
-
-		return this.getHeadAndHash();
 	}
 
 	moveUp() {
@@ -96,16 +96,6 @@ class Snake {
 		const head = this.getHead();
 		const newHead = { x: head.x, y: head.y - 1 };
 		this.addNewHead(newHead);
-
-		return this.getHeadAndHash();
-	}
-
-	getHeadAndHash() {
-		const [headKey] = this.keys;
-		return {
-			headKey,
-			hash: this.hash,
-		};
 	}
 
 	moveDown() {
@@ -114,8 +104,14 @@ class Snake {
 		const head = this.getHead();
 		const newHead = { x: head.x, y: head.y + 1 };
 		this.addNewHead(newHead);
+	}
 
-		return this.getHeadAndHash();
+	getHeadAndHash() {
+		const [headKey] = this.keys;
+		return {
+			headKey,
+			hash: this.hash,
+		};
 	}
 
 	getHead() {

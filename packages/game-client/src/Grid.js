@@ -127,10 +127,12 @@ class Grid {
 		for (const tick of Object.values(SNAKE_TICKS)) {
 			const { DURATION: duration } = tick;
 			const timer = setInterval(() => {
-				const updatedPositions = {};
+				const movedSnakesHash = {};
+
 				Object.entries(this.tracks[tick.TYPE]).forEach(([snakeId, snake]) => {
 					try {
-						updatedPositions[snakeId] = snake.move(); // Contains newHead and hash.;
+						snake.move(); // At this point in time the grid data will be inconsistent.
+						movedSnakesHash[snakeId] = snake.getHeadAndHash();
 					} catch (err) {
 						if (err === SNAKE_COLLIDED_WITH_WALL || err === SNAKE_SUCIDE) {
 							snake.die();
@@ -160,14 +162,59 @@ class Grid {
 					}
 				});
 
-				// for (const snake of newPositions) {
-				// 	const [head] = snake.data.keys;
-				// 	const { x, y } = snake.data.hash[head];
-				// 	if (!isCellValid(x, y)) {
-				// 		this.removeSnakeFromTrack(snake.id);
-				// 	}
-				// }
+				const idleSnakesHash = Object.entries(this.snakes).reduce((hash, [snakeId, snake]) => {
+					if (!(snakeId in movedSnakesHash)) {
+						hash[snakeId] = snake.getHeadAndHash();
+					}
+					return hash;
+				}, {});
 
+				const idleSnakes = Object.entries(idleSnakesHash);
+				const movedSnakes = Object.entries(movedSnakesHash);
+
+				const snakesToRemove = {};
+
+				// Handle
+				// 1) Two snake colliding head to head.
+				// 2) A snake colliding into another snake.
+				for (let i = 0; i < movedSnakes.length; i++) {
+					const [snakeOneId, { headKey: snakeOneHeadKey, hash: snakeOneHash }] = movedSnakes[i];
+					for (let j = i + 1; j < movedSnakes.length; j++) {
+						const [snakeTwoId, { headKey: snakeTwoHeadKey, hash: snakeTwoHash }] = movedSnakes[j];
+						if (snakeOneHeadKey === snakeTwoHeadKey) {
+							snakesToRemove[snakeOneId] = this.snakes[snakeOneId];
+							snakesToRemove[snakeTwoId] = this.snakes[snakeTwoId];
+						} else if (snakeOneHeadKey in snakeTwoHash) {
+							snakesToRemove[snakeOneId] = this.snakes[snakeOneId];
+						} else if (snakeTwoHeadKey in snakeOneHash) {
+							snakesToRemove[snakeTwoId] = this.snakes[snakeTwoId];
+						}
+					}
+
+					// Handle collision of a snake that has moved
+					// in this particular tick with a snake that
+					// doesn't operate in this tick.
+
+					for (let k = 0; k < idleSnakes.length; k++) {
+						const [snakeTwoId, { headKey: snakeTwoHeadKey, hash: snakeTwoHash }] = idleSnakes[k];
+						if (snakeOneHeadKey === snakeTwoHeadKey) {
+							snakesToRemove[snakeOneId] = this.snakes[snakeOneId];
+							snakesToRemove[snakeTwoId] = this.snakes[snakeTwoId];
+						} else if (snakeOneHeadKey in snakeTwoHash) {
+							snakesToRemove[snakeOneId] = this.snakes[snakeOneId];
+						}
+						// No need to to check snakeTwo's head colliding on snakeOne's body
+						// since snakeTwo is idle in this tick.
+					}
+				}
+
+				Object.values(snakesToRemove).forEach((snake) => snake.die());
+
+				// To handle consumption of food.
+
+				for (let i = 0; i < movedSnakes.length; i++) {}
+
+				// Grid data becomes consistent here, so update the UI.
 				this.updateCells(this.getAllCells());
 			}, duration);
 			this.timers.push(timer);
