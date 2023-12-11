@@ -118,7 +118,7 @@ class Snake {
 				// food.
 				this.grid.removeFoodFromGrid(newTail.x, newTail.y);
 				addTail();
-			} else if (isCellValid(newTail.x, newTail.y) && !(newTail in this.grid.getCellsOccupiedBySnakes())) {
+			} else if (isCellValid(newTail.x, newTail.y) && !(newTailKey in this.grid.getCellsOccupiedBySnakes())) {
 				addTail();
 			} else {
 				// The cell before the tail cell is already occupied by either,
