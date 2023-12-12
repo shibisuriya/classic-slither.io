@@ -1,5 +1,5 @@
 import Snake from './Snake';
-import { DIRECTIONS, SNAKE_TICKS, FOOD_TICKS, FOOD_TYPES } from './constants';
+import { DIRECTIONS, SNAKE_TICKS, FOOD_TICKS, FOOD_TYPES, GAME_STATES } from './constants';
 import { initialSnakesState, GRID_MAP, initialFoodState } from './computed';
 import { generateRandomNumber } from './utils';
 import { generateKey, isCellValid, whichFoodToSpawn } from './helpers';
@@ -8,11 +8,33 @@ import cloneDeep from 'lodash/cloneDeep';
 
 class Grid {
 	constructor() {
-		this.attachKeyboard();
+		this.gameState = GAME_STATES.PAUSED; // Game starts with paused game state.
 		this.createTracks();
 		this.initializeSnakes();
 		this.initializeFood();
-		this.attachTickers();
+		this.attachKeyboard();
+	}
+
+	startGame() {
+		this.resumeGame();
+	}
+
+	resumeGame() {
+		if (this.gameState === GAME_STATES.PAUSED && (!this.timers || this.timers?.length <= 0)) {
+			this.attachTickers();
+			this.gameState = GAME_STATES.RESUMED;
+		} else {
+			console.warn('The game is already resumed.');
+		}
+	}
+
+	pauseGame() {
+		if (this.gameState === GAME_STATES.RESUMED && this.timers.length > 0) {
+			this.detachTickers();
+			this.gameState = GAME_STATES.PAUSED;
+		} else {
+			console.warn('The game is already in paused state.');
+		}
 	}
 
 	createTracks() {
@@ -118,21 +140,31 @@ class Grid {
 				if (causeOfDeath === SNAKE_COLLIDED_WITH_WALL || causeOfDeath === SNAKE_SUCIDE) {
 					// Snake died by colliding with itself or colliding with the wall...
 					// So convert the entire body into fillets (a type of food).
-					for (const key of keys) {
-						const cell = hash[key];
-						const { x, y } = cell;
-						this.addFoodToGrid(x, y, FOOD_TYPES.FILLET.TYPE);
+					for (let i = 0; i < keys.length; i++) {
+						if (i % 2 === 0) {
+							// Cells with odd index will become food, this is too prevent a lot of fillets (fillet is a super food
+							// which lets the snake grow quickly).
+							const key = keys[i];
+							const cell = hash[key];
+							const { x, y } = cell;
+
+							this.addFoodToGrid(x, y, FOOD_TYPES.FILLET.TYPE);
+						}
 					}
 				} else if (causeOfDeath === SNAKE_HEAD_COLLISION || causeOfDeath === SNAKE_BODY_COLLISION) {
 					// Snake died by colliding with other players.
 					// If we convert the entire body into snake food we might
 					// end up trying to convert cells occupied by an opponent into food,
 					// which might throw an error.
-					for (const key of keys) {
-						const cell = hash[key];
-						const { x, y } = cell;
-						if (headKey !== key) {
-							this.addFoodToGrid(x, y, FOOD_TYPES.FILLET.TYPE);
+					for (let i = 0; i < keys.length; i++) {
+						if (i % 2 !== 0) {
+							// Cells with even index will become food in this case, since the head key will be skipped.
+							const key = keys[i];
+							const cell = hash[key];
+							const { x, y } = cell;
+							if (headKey !== key) {
+								this.addFoodToGrid(x, y, FOOD_TYPES.FILLET.TYPE);
+							}
 						}
 					}
 				} else {
@@ -170,7 +202,11 @@ class Grid {
 	}
 
 	attachTickers() {
-		this.timers = [];
+		if (!this.timers || this.timers?.length <= 0) {
+			this.timers = [];
+		} else {
+			throw new Error('Timers already exists, you are trying to attach timers again?');
+		}
 
 		for (const tick of Object.values(SNAKE_TICKS)) {
 			const { DURATION: duration } = tick;
@@ -297,7 +333,7 @@ class Grid {
 				});
 
 				// Grid data becomes consistent here, so update the UI.
-				this.updateCells(this.getAllCells());
+				this.updateState();
 			}, duration);
 			this.timers.push(timer);
 		}
@@ -305,9 +341,18 @@ class Grid {
 		for (const { DURATION: duration } of Object.values(FOOD_TICKS)) {
 			const timer = setInterval(() => {
 				this.spawnFood();
-				this.updateCells(this.getAllCells());
+				this.updateState();
 			}, duration);
 			this.timers.push(timer);
+		}
+	}
+
+	updateState() {
+		// TODO: refactor this method.
+		if (this.updateCells) {
+			this.updateCells(this.getAllCells());
+		} else {
+			console.warn('Grid instance was not supplied a method to update the UI...');
 		}
 	}
 
@@ -379,9 +424,13 @@ class Grid {
 	}
 
 	detachTickers() {
+		if (this.timers && this.timers.length <= 0) {
+			throw new Error('No timer exists, unable to detach timers.');
+		}
 		this.timers.forEach((timer) => {
 			clearInterval(timer);
 		});
+		this.timers = [];
 	}
 
 	onDestroy() {

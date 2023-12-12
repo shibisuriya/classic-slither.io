@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, forwardRef, useState, useRef, useImperativeHandle, useCallback } from 'react';
 import Grid from './Grid.jsx';
 import { grid } from './Grid.js';
 
-const useGame = () => {
+const Game = forwardRef((props, ref) => {
+	const { showCellId, gameState } = props;
+
 	const [cells, setCells] = useState(grid.getAllCells());
 
 	const updateCells = (cells) => {
@@ -10,15 +12,22 @@ const useGame = () => {
 	};
 
 	useEffect(() => {
+		// This callback is used to update data from the
+		// the object to the ui.
 		grid.updateCells = updateCells;
+		if (gameState) {
+			grid.startGame();
+		}
 	}, []);
 
-	return { cells };
-};
+	useImperativeHandle(ref, () => {
+		return {
+			pauseGame: () => grid.pauseGame(),
+			resumeGame: () => grid.resumeGame(),
+		};
+	});
 
-function App() {
-	const { cells } = useGame();
-	return <Grid cells={cells} />;
-}
+	return <Grid cells={cells} showCellId={showCellId} />;
+});
 
-export default App;
+export default Game;

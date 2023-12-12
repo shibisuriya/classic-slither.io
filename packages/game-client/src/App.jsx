@@ -5,13 +5,14 @@ import { stringToBoolean } from './utils';
 import { allSnakesSelectOption } from './constants';
 import DirectionSelector from './components/DirectionSelector';
 import styles from './app.module.css';
+import { Switch } from 'antd';
 
 function App() {
 	const [recordInLocalStorage, setRecordInLocalStorage] = useState(
 		stringToBoolean(localStorage.getItem('recordInLocalStorage')) ?? false,
 	);
 
-	const [isGamePaused, setIsGamePaused] = useState(stringToBoolean(localStorage.getItem('isGamePaused') ?? true));
+	const [gameState, setGameState] = useState(stringToBoolean(localStorage.getItem('gameState') ?? true));
 	const [showCellId, setShowCellId] = useState(stringToBoolean(localStorage.getItem('showCellId')) ?? false);
 	const gameRef = useRef();
 
@@ -41,19 +42,20 @@ function App() {
 		gameRef.current.setDirection(snakeId, direction);
 	}
 
+	const changeGameState = (value) => {
+		if (value) {
+			gameRef.current.resumeGame();
+		} else {
+			gameRef.current.pauseGame();
+		}
+		localStorage.setItem('gameState', value);
+		setGameState(value);
+	};
+
 	return (
 		<Fragment>
 			<Space>
-				<Checkbox
-					checked={isGamePaused}
-					onChange={(e) => {
-						const val = e.target.checked;
-						localStorage.setItem('isGamePaused', val);
-						setIsGamePaused(val);
-					}}
-				>
-					Is Game paused?
-				</Checkbox>
+				Game running? <Switch checked={gameState} onChange={changeGameState} />;
 				<Checkbox
 					checked={recordInLocalStorage}
 					onChange={(e) => {
@@ -77,7 +79,6 @@ function App() {
 				<Button type="primary" onClick={() => gameRef.current.spawnFood()}>
 					Spawn random food in random cell
 				</Button>
-
 				<Select
 					style={{ width: 60 }}
 					value={selectedSnake}
@@ -104,7 +105,7 @@ function App() {
 			<Game
 				ref={gameRef}
 				showCellId={showCellId}
-				isGamePaused={isGamePaused}
+				gameState={gameState}
 				updateSnakeIdList={updateSnakeIdList}
 				updateDirectionList={updateDirectionList}
 			/>
