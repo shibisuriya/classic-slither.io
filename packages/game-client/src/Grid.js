@@ -1,18 +1,40 @@
 import Snake from './Snake';
-import { DIRECTIONS, SNAKE_TICKS, FOOD_TICKS, FOOD_TYPES } from './constants';
+import { DIRECTIONS, SNAKE_TICKS, FOOD_TICKS, FOOD_TYPES, GAME_STATES } from './constants';
 import { initialSnakesState, GRID_MAP, initialFoodState } from './computed';
 import { generateRandomNumber } from './utils';
 import { generateKey, isCellValid, whichFoodToSpawn } from './helpers';
-import { SNAKE_COLLIDED_WITH_WALL, SNAKE_SUCIDE } from './errors';
+import { SNAKE_COLLIDED_WITH_WALL, SNAKE_SUCIDE, SNAKE_BODY_COLLISION, SNAKE_HEAD_COLLISION } from './errors';
 import cloneDeep from 'lodash/cloneDeep';
 
 class Grid {
 	constructor() {
-		this.attachKeyboard();
+		this.gameState = GAME_STATES.PAUSED; // Game starts with paused game state.
 		this.createTracks();
 		this.initializeSnakes();
 		this.initializeFood();
-		this.attachTickers();
+		this.attachKeyboard();
+	}
+
+	startGame() {
+		this.resumeGame();
+	}
+
+	resumeGame() {
+		if (this.gameState === GAME_STATES.PAUSED && (!this.timers || this.timers?.length <= 0)) {
+			this.attachTickers();
+			this.gameState = GAME_STATES.RESUMED;
+		} else {
+			console.warn('The game is already resumed.');
+		}
+	}
+
+	pauseGame() {
+		if (this.gameState === GAME_STATES.RESUMED && this.timers.length > 0) {
+			this.detachTickers();
+			this.gameState = GAME_STATES.PAUSED;
+		} else {
+			console.warn('The game is already in paused state.');
+		}
 	}
 
 	createTracks() {
@@ -111,18 +133,42 @@ class Grid {
 		this.snakes = {};
 		for (const [snakeId, initialSnakeState] of Object.entries(initialSnakesState)) {
 			const snake = new Snake(initialSnakeState);
-			snake.die = () => {
+			snake.die = (causeOfDeath) => {
 				// When a snake dies his body is converted to food named fillets.
 				const removedSnake = this.removeSnakeFromGrid(snakeId);
 				const { hash, headKey, keys } = removedSnake;
-				for (const key of keys) {
-					const cell = hash[key];
-					const { x, y } = cell;
-					// Skip the head of the dead snake for now.
-					// TODO: Implement approrpiate logic for this.
-					if (headKey !== key) {
-						this.addFoodToGrid(x, y, FOOD_TYPES.FILLET.TYPE);
+				if (causeOfDeath === SNAKE_COLLIDED_WITH_WALL || causeOfDeath === SNAKE_SUCIDE) {
+					// Snake died by colliding with itself or colliding with the wall...
+					// So convert the entire body into fillets (a type of food).
+					for (let i = 0; i < keys.length; i++) {
+						if (i % 2 === 0) {
+							// Cells with odd index will become food, this is too prevent a lot of fillets (fillet is a super food
+							// which lets the snake grow quickly).
+							const key = keys[i];
+							const cell = hash[key];
+							const { x, y } = cell;
+
+							this.addFoodToGrid(x, y, FOOD_TYPES.FILLET.TYPE);
+						}
 					}
+				} else if (causeOfDeath === SNAKE_HEAD_COLLISION || causeOfDeath === SNAKE_BODY_COLLISION) {
+					// Snake died by colliding with other players.
+					// If we convert the entire body into snake food we might
+					// end up trying to convert cells occupied by an opponent into food,
+					// which might throw an error.
+					for (let i = 0; i < keys.length; i++) {
+						if (i % 2 !== 0) {
+							// Cells with even index will become food in this case, since the head key will be skipped.
+							const key = keys[i];
+							const cell = hash[key];
+							const { x, y } = cell;
+							if (headKey !== key) {
+								this.addFoodToGrid(x, y, FOOD_TYPES.FILLET.TYPE);
+							}
+						}
+					}
+				} else {
+					throw new Error('Cause of death of snake unknown, unable to convert snakes body into food.');
 				}
 			};
 			snake.changeSpeed = (trackId) => this.switchSnakeTrack.bind(this)({ snakeId, trackId });
@@ -156,7 +202,11 @@ class Grid {
 	}
 
 	attachTickers() {
-		this.timers = [];
+		if (!this.timers || this.timers?.length <= 0) {
+			this.timers = [];
+		} else {
+			throw new Error('Timers already exists, you are trying to attach timers again?');
+		}
 
 		for (const tick of Object.values(SNAKE_TICKS)) {
 			const { DURATION: duration } = tick;
@@ -178,7 +228,7 @@ class Grid {
 						}
 					} catch (err) {
 						if (err === SNAKE_COLLIDED_WITH_WALL || err === SNAKE_SUCIDE) {
-							snake.die();
+							snake.die(err);
 						} else {
 							// We encounted some other problem, so throw upward towards
 							// the error bounddary.
@@ -225,12 +275,24 @@ class Grid {
 					for (let j = i + 1; j < movedSnakes.length; j++) {
 						const [snakeTwoId, { headKey: snakeTwoHeadKey, hash: snakeTwoHash }] = movedSnakes[j];
 						if (snakeOneHeadKey === snakeTwoHeadKey) {
-							snakesToRemove[snakeOneId] = this.snakes[snakeOneId];
-							snakesToRemove[snakeTwoId] = this.snakes[snakeTwoId];
+							snakesToRemove[snakeOneId] = {
+								snake: this.snakes[snakeOneId],
+								causeOfDeath: SNAKE_HEAD_COLLISION,
+							};
+							snakesToRemove[snakeTwoId] = {
+								snake: this.snakes[snakeTwoId],
+								causeOfDeath: SNAKE_HEAD_COLLISION,
+							};
 						} else if (snakeOneHeadKey in snakeTwoHash) {
-							snakesToRemove[snakeOneId] = this.snakes[snakeOneId];
+							snakesToRemove[snakeOneId] = {
+								snake: this.snakes[snakeOneId],
+								causeOfDeath: SNAKE_BODY_COLLISION,
+							};
 						} else if (snakeTwoHeadKey in snakeOneHash) {
-							snakesToRemove[snakeTwoId] = this.snakes[snakeTwoId];
+							snakesToRemove[snakeTwoId] = {
+								snake: this.snakes[snakeTwoId],
+								causeOfDeath: SNAKE_BODY_COLLISION,
+							};
 						}
 					}
 
@@ -241,17 +303,28 @@ class Grid {
 					for (let k = 0; k < idleSnakes.length; k++) {
 						const [snakeTwoId, { headKey: snakeTwoHeadKey, hash: snakeTwoHash }] = idleSnakes[k];
 						if (snakeOneHeadKey === snakeTwoHeadKey) {
-							snakesToRemove[snakeOneId] = this.snakes[snakeOneId];
-							snakesToRemove[snakeTwoId] = this.snakes[snakeTwoId];
+							snakesToRemove[snakeOneId] = {
+								snake: this.snakes[snakeOneId],
+								causeOfDeath: SNAKE_HEAD_COLLISION,
+							};
+							snakesToRemove[snakeTwoId] = {
+								snake: this.snakes[snakeTwoId],
+								causeOfDeath: SNAKE_HEAD_COLLISION,
+							};
 						} else if (snakeOneHeadKey in snakeTwoHash) {
-							snakesToRemove[snakeOneId] = this.snakes[snakeOneId];
+							snakesToRemove[snakeOneId] = {
+								snake: this.snakes[snakeOneId],
+								causeOfDeath: SNAKE_BODY_COLLISION,
+							};
 						}
 						// No need to to check snakeTwo's head colliding on snakeOne's body
 						// since snakeTwo is idle in this tick.
 					}
 				}
 
-				Object.values(snakesToRemove).forEach((snake) => snake.die());
+				Object.values(snakesToRemove).forEach(({ snake, causeOfDeath }) => {
+					snake.die(causeOfDeath);
+				});
 
 				// To handle consumption of food.
 
@@ -260,7 +333,7 @@ class Grid {
 				});
 
 				// Grid data becomes consistent here, so update the UI.
-				this.updateCells(this.getAllCells());
+				this.updateState();
 			}, duration);
 			this.timers.push(timer);
 		}
@@ -268,9 +341,18 @@ class Grid {
 		for (const { DURATION: duration } of Object.values(FOOD_TICKS)) {
 			const timer = setInterval(() => {
 				this.spawnFood();
-				this.updateCells(this.getAllCells());
+				this.updateState();
 			}, duration);
 			this.timers.push(timer);
+		}
+	}
+
+	updateState() {
+		// TODO: refactor this method.
+		if (this.updateCells) {
+			this.updateCells(this.getAllCells());
+		} else {
+			console.warn('Grid instance was not supplied a method to update the UI...');
 		}
 	}
 
@@ -342,9 +424,13 @@ class Grid {
 	}
 
 	detachTickers() {
+		if (this.timers && this.timers.length <= 0) {
+			throw new Error('No timer exists, unable to detach timers.');
+		}
 		this.timers.forEach((timer) => {
 			clearInterval(timer);
 		});
+		this.timers = [];
 	}
 
 	onDestroy() {

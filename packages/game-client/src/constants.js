@@ -5,6 +5,11 @@ const GRID_WIDTH = 30 * 30;
 const GRID_HEIGHT = 30 * 30;
 const CELL_DIMENSION = 30;
 
+const GAME_STATES = {
+	PAUSED: 'paused',
+	RESUMED: 'resumed',
+};
+
 export const allSnakesSelectOption = { id: 'All' };
 
 if (GRID_HEIGHT % CELL_DIMENSION !== 0) {
@@ -111,4 +116,5 @@ export {
 	SNAKE_TICKS,
 	FOOD_EFFECTS,
 	FOOD_TICKS,
+	GAME_STATES,
 };
