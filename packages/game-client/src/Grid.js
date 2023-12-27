@@ -341,6 +341,15 @@ class Grid {
 		Object.values(fedSnakesHash).forEach(({ snake, food }) => {
 			snake.consume(food);
 		});
+
+		// End the game if there is only 1 or 0 player in the map,
+		// since the last person existing in the map wins the game.
+		// This has side effects, i.e., you won't be able to play
+		// by yourselves alone in the map for testing purposes as well...
+		// In that case commnet out this piece of code.
+		if (Object.values(this.snakes).length <= 1) {
+			this.endGame();
+		}
 	}
 
 	attachTickers() {
@@ -491,6 +500,11 @@ class Grid {
 			return annotationData;
 		}, []);
 		return annotationData;
+	}
+
+	endGame() {
+		this.onDestroy();
+		this.gameOver();
 	}
 
 	onDestroy() {

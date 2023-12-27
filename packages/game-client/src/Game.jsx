@@ -8,6 +8,8 @@ const Game = forwardRef((props, ref) => {
 	const [view, setView] = useState(grid.getViewData());
 	const [annotations, setAnnotations] = useState(grid.getAnnotationData());
 
+	const [isGameOver, setIsGameOver] = useState(false);
+
 	const viewUpdater = (cells) => {
 		setView(cells);
 	};
@@ -21,6 +23,7 @@ const Game = forwardRef((props, ref) => {
 		// the object to the ui.
 		grid.viewUpdater = viewUpdater;
 		grid.annotationsUpdater = annotationsUpdater;
+		grid.gameOver = () => setIsGameOver(true);
 
 		grid.updateSnakeList = updateSnakeList;
 		if (gameState) {
@@ -41,7 +44,7 @@ const Game = forwardRef((props, ref) => {
 		};
 	});
 
-	return <Grid view={view} annotations={annotations} showCellId={showCellId} />;
+	return <Grid view={view} annotations={annotations} showCellId={showCellId} isGameOver={isGameOver} />;
 });
 
 export default Game;
