@@ -44,8 +44,8 @@ class Grid {
 		}
 	}
 
-	getAllCells() {
-		return Object.values(this.snakes)
+	getViewData() {
+		const viewData = Object.values(this.snakes)
 			.reduce((cells, snake) => {
 				snake.keys.forEach((key, index) => {
 					const cell = snake.hash[key];
@@ -66,6 +66,7 @@ class Grid {
 					return cells;
 				}, []),
 			);
+		return viewData;
 	}
 
 	attachKeyboard() {
@@ -183,6 +184,12 @@ class Grid {
 				removeFoodFromGrid: this.removeFoodFromGrid.bind(this),
 				getCellsOccupiedBySnakes: this.getCellsOccupiedBySnakes.bind(this),
 			};
+
+			if (snake.isBot) {
+				// Every snake that is a bot should have access to the game's data like opponent's position,
+				// food's coordinates, etc.
+				snake.game = { getGameData: this.getGameData.bind(this) };
+			}
 
 			this.snakes[snakeId] = snake;
 			const trackId = snake.defaultTick;
@@ -328,9 +335,6 @@ class Grid {
 		Object.values(fedSnakesHash).forEach(({ snake, food }) => {
 			snake.consume(food);
 		});
-
-		// Grid data becomes consistent here, so update the UI.
-		this.updateState();
 	}
 
 	attachTickers() {
@@ -344,6 +348,7 @@ class Grid {
 			const { DURATION: duration } = tick;
 			const timer = setInterval(() => {
 				this.moveSnakes(Object.keys(this.tracks[tick.TYPE]));
+				this.updateView();
 			}, duration);
 			this.timers.push(timer);
 		}
@@ -351,18 +356,24 @@ class Grid {
 		for (const { DURATION: duration } of Object.values(FOOD_TICKS)) {
 			const timer = setInterval(() => {
 				this.spawnFood();
-				this.updateState();
+				this.updateView();
 			}, duration);
 			this.timers.push(timer);
 		}
 	}
 
-	updateState() {
-		// TODO: refactor this method.
-		if (this.updateCells) {
-			this.updateCells(this.getAllCells());
+	getGameData() {
+		return {
+			snakes: {},
+			food: {},
+		};
+	}
+
+	updateView() {
+		if (this.viewUpdater) {
+			this.viewUpdater(this.getViewData());
 		} else {
-			console.warn('Grid instance was not supplied a method to update the UI...');
+			console.warn('Grid instance was not supplied a method to update the view...');
 		}
 
 		if (this.updateSnakeList) {
@@ -407,16 +418,18 @@ class Grid {
 	getCellsOccupiedBySnakes() {
 		return Object.values(this.snakes).reduce((cells, snake) => {
 			// Make sure there is integrity in snake's data before invoking this
-			// method since it throws an error if two snakes occupy a single cell...
+			// method since it throws an error if two snakes occupy a single cell or food and snakes occupy the same cell...
 			const { hash } = snake;
-			// for (const [key, value] of Object.entries(hash)) {
-			// 	if (!(key in cells)) {
-			// 		Object.assign(cells, { [key]: value });
-			// 	} else {
-			// 		throw new Error('Two snakes are occupying a single cell!');
-			// 	}
-			// }
-			return Object.assign(cells, hash);
+			for (const [key, value] of Object.entries(hash)) {
+				if (!(key in cells) && !this.isFoodCell(value.x, value.y)) {
+					// hmmm, isFoodCell checks for isValidcell... So the edge case where
+					// we check wheather the snake has a valid cell or not is taken care of...
+					Object.assign(cells, { [key]: value });
+				} else {
+					throw new Error('Two snakes or food are occupying a single cell!');
+				}
+			}
+			return cells;
 		}, {});
 	}
 
@@ -450,6 +463,16 @@ class Grid {
 			clearInterval(timer);
 		});
 		this.timers = [];
+	}
+
+	updateAnnotations() {
+		if (this.annotationsUpdater) {
+			this.annotationsUpdater([]);
+		}
+	}
+
+	getAnnotationData() {
+		return [];
 	}
 
 	onDestroy() {

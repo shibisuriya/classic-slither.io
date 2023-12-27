@@ -5,16 +5,23 @@ import { grid } from './Grid.js';
 const Game = forwardRef((props, ref) => {
 	const { showCellId, gameState, updateSnakeList } = props;
 
-	const [cells, setCells] = useState(grid.getAllCells());
+	const [view, setView] = useState(grid.getViewData());
+	const [annotations, setAnnotations] = useState(grid.getAnnotationData());
 
-	const updateCells = (cells) => {
-		setCells(cells);
+	const viewUpdater = (cells) => {
+		setView(cells);
+	};
+
+	const annotationsUpdater = (cells) => {
+		setAnnotations(cells);
 	};
 
 	useEffect(() => {
 		// This callback is used to update data from the
 		// the object to the ui.
-		grid.updateCells = updateCells;
+		grid.viewUpdater = viewUpdater;
+		grid.annotationsUpdater = annotationsUpdater;
+
 		grid.updateSnakeList = updateSnakeList;
 		if (gameState) {
 			grid.startGame();
@@ -34,7 +41,7 @@ const Game = forwardRef((props, ref) => {
 		};
 	});
 
-	return <Grid cells={cells} showCellId={showCellId} />;
+	return <Grid view={view} annotations={annotations} showCellId={showCellId} />;
 });
 
 export default Game;

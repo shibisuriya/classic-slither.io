@@ -1,6 +1,6 @@
 import { NUMBER_OF_COLUMNS, NUMBER_OF_ROWS, DIRECTIONS, SNAKE_TICKS } from './constants';
 import { generateKey, generateValue, isCellValid } from './helpers';
-import { SCRIPTED_BOT_TYPES } from './scripted-bots';
+import { BOTS } from './bots';
 
 const generateGridMap = () => {
 	const hash = {};
@@ -44,7 +44,7 @@ const initialSnakesState = {
 			{ x: 3, y: 0 }, // Tail
 		],
 		isBot: true,
-		botType: SCRIPTED_BOT_TYPES.HEAD_HUNTER,
+		botName: BOTS.HEAD_HUNTER.key,
 		direction: DIRECTIONS.DOWN,
 		defaultTick: SNAKE_TICKS.QUARTER.TYPE,
 	},
@@ -76,7 +76,7 @@ const initialSnakesState = {
 			{ x: 7, y: 0 }, // Tail
 		],
 		direction: DIRECTIONS.DOWN,
-		defaultTick: SNAKE_TICKS.ONE.TYPE,
+		defaultTick: SNAKE_TICKS.QUARTER.TYPE,
 	},
 };
 

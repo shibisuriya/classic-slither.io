@@ -3,6 +3,7 @@ import { generateKey, getOppositeDirection, isCellValid } from './helpers';
 import { DIRECTIONS, FOOD_EFFECTS, FOOD_TYPES } from './constants';
 import { SNAKE_COLLIDED_WITH_WALL, SNAKE_SUCIDE } from './errors';
 import cloneDeep from 'lodash/cloneDeep';
+import { BOTS } from './bots';
 
 class Snake {
 	constructor(snake) {
@@ -11,8 +12,6 @@ class Snake {
 		this.bodyColor = snake.bodyColor;
 		this.headColor = snake.headColor;
 		this.defaultTick = snake.defaultTick;
-		this.isBot = snake.isBot;
-		this.botType = snake.botType;
 		this.keys = snake.cells.reduce((keys, cell) => {
 			const { x, y } = cell;
 			keys.push(generateKey(x, y));
@@ -27,6 +26,16 @@ class Snake {
 
 		this.direction = snake.direction;
 		this.buffs = {};
+
+		if (snake.isBot) {
+			this.loadBot(snake.botName);
+		}
+	}
+
+	loadBot(botName) {
+		this.isBot = true;
+		this.botName = botName;
+		this.bot = BOTS[botName].bot;
 	}
 
 	addBuff(type, buff) {
@@ -201,7 +210,8 @@ class Snake {
 			// The snake has been asked to move to the next cell...
 			// If this particular snake is a bot, implement the code for the bot logic here...
 			// The 'bot' can only do 1 out of 3 things move 'left', 'right' or 'forward', simple.
-			this.changeDirection.bind(this);
+
+			this.bot(this.changeDirection.bind(this));
 		}
 
 		switch (this.direction) {
