@@ -8,8 +8,6 @@ function Grid({ view, annotations, showCellId, isGameOver }) {
 		<div className={styles.grid} style={{ width: `${GRID_WIDTH}px`, height: `${GRID_HEIGHT}px` }}>
 			{/* // I have separate <div />(s) for annotations and game, because these can overlap with each other. */}
 
-			{isGameOver && <div className={styles['game-over-banner']}>Game Over</div>}
-
 			{view.map((cell) => {
 				const { x, y, color, animationClass } = cell;
 				return (
@@ -47,6 +45,8 @@ function Grid({ view, annotations, showCellId, isGameOver }) {
 					</div>
 				);
 			})}
+
+			{isGameOver && <div className={styles['game-over-banner']}>Game Over</div>}
 		</div>
 	);
 }
