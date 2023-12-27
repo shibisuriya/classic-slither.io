@@ -201,6 +201,134 @@ class Grid {
 		return cloneDeep(removedSnake);
 	}
 
+	moveSnakes(snakes) {
+		// Get an array of ids...
+		const movedSnakesHash = {};
+		const fedSnakesHash = {};
+
+		snakes.forEach((snakeId) => {
+			const snake = this.snakes[snakeId];
+			try {
+				snake.move(); // At this point in time the grid data will be inconsistent.
+				const headAndHash = snake.getHeadAndHash();
+				movedSnakesHash[snakeId] = headAndHash;
+
+				// Just note down wheather a snake has consume a food in this tick.
+				const { head } = headAndHash;
+				if (this.isFoodCell(head.x, head.y)) {
+					const food = this.removeFoodFromGrid(head.x, head.y);
+					fedSnakesHash[snakeId] = { snake, food };
+				}
+			} catch (err) {
+				if (err === SNAKE_COLLIDED_WITH_WALL || err === SNAKE_SUCIDE) {
+					snake.die(err);
+				} else {
+					// We encounted some other problem, so throw upward towards
+					// the error bounddary.
+					throw err;
+				}
+				// A snake object is aware of,
+				// 1) The map's boundaries.
+				// 2) Itself, it knows when it has bite itself.
+				// A snake object is not aware of other snakes.
+				// Imagine each snake having it's own grid and
+				// moving in its own grid without the knowledge about
+				// food and other snakes. The `grid` (this) object is
+				// what let's individual snakes communicate
+				// with other snakes and food.
+				// This behavior is intentional, to make the gameplay fair / correct
+				// we have to perform parallel computation not serial computation.
+				// That is we have to make each snake move 1 step forward and
+				// check if the move is valid or not, or what happened in that particular move.
+				// For that reason, advanced computation such as,
+				// 1) Intake of food.
+				// 2) Snake collision with other snake.
+				// 3) Head to head snake collision.
+				// are done below.
+			}
+		});
+
+		const idleSnakesHash = Object.entries(this.snakes).reduce((hash, [snakeId, snake]) => {
+			if (!(snakeId in movedSnakesHash)) {
+				hash[snakeId] = snake.getHeadAndHash();
+			}
+			return hash;
+		}, {});
+
+		const idleSnakes = Object.entries(idleSnakesHash);
+		const movedSnakes = Object.entries(movedSnakesHash);
+
+		const snakesToRemove = {};
+
+		// Handle
+		// 1) Two snake colliding head to head.
+		// 2) A snake colliding into another snake.
+		for (let i = 0; i < movedSnakes.length; i++) {
+			const [snakeOneId, { headKey: snakeOneHeadKey, hash: snakeOneHash }] = movedSnakes[i];
+			for (let j = i + 1; j < movedSnakes.length; j++) {
+				const [snakeTwoId, { headKey: snakeTwoHeadKey, hash: snakeTwoHash }] = movedSnakes[j];
+				if (snakeOneHeadKey === snakeTwoHeadKey) {
+					snakesToRemove[snakeOneId] = {
+						snake: this.snakes[snakeOneId],
+						causeOfDeath: SNAKE_HEAD_COLLISION,
+					};
+					snakesToRemove[snakeTwoId] = {
+						snake: this.snakes[snakeTwoId],
+						causeOfDeath: SNAKE_HEAD_COLLISION,
+					};
+				} else if (snakeOneHeadKey in snakeTwoHash) {
+					snakesToRemove[snakeOneId] = {
+						snake: this.snakes[snakeOneId],
+						causeOfDeath: SNAKE_BODY_COLLISION,
+					};
+				} else if (snakeTwoHeadKey in snakeOneHash) {
+					snakesToRemove[snakeTwoId] = {
+						snake: this.snakes[snakeTwoId],
+						causeOfDeath: SNAKE_BODY_COLLISION,
+					};
+				}
+			}
+
+			// Handle collision of a snake that has moved
+			// in this particular tick with a snake that
+			// doesn't operate in this tick.
+
+			for (let k = 0; k < idleSnakes.length; k++) {
+				const [snakeTwoId, { headKey: snakeTwoHeadKey, hash: snakeTwoHash }] = idleSnakes[k];
+				if (snakeOneHeadKey === snakeTwoHeadKey) {
+					snakesToRemove[snakeOneId] = {
+						snake: this.snakes[snakeOneId],
+						causeOfDeath: SNAKE_HEAD_COLLISION,
+					};
+					snakesToRemove[snakeTwoId] = {
+						snake: this.snakes[snakeTwoId],
+						causeOfDeath: SNAKE_HEAD_COLLISION,
+					};
+				} else if (snakeOneHeadKey in snakeTwoHash) {
+					snakesToRemove[snakeOneId] = {
+						snake: this.snakes[snakeOneId],
+						causeOfDeath: SNAKE_BODY_COLLISION,
+					};
+				}
+				// No need to to check snakeTwo's head colliding on snakeOne's body
+				// since snakeTwo is idle in this tick.
+			}
+		}
+
+		Object.values(snakesToRemove).forEach(({ snake, causeOfDeath }) => {
+			snake.die(causeOfDeath);
+		});
+
+		// To handle consumption of food.
+
+		Object.values(fedSnakesHash).forEach(({ snake, food }) => {
+			snake.consume(food);
+		});
+
+		// Grid data becomes consistent here, so update the UI.
+		this.updateState();
+	}
+
 	attachTickers() {
 		if (!this.timers || this.timers?.length <= 0) {
 			this.timers = [];
@@ -211,129 +339,7 @@ class Grid {
 		for (const tick of Object.values(SNAKE_TICKS)) {
 			const { DURATION: duration } = tick;
 			const timer = setInterval(() => {
-				const movedSnakesHash = {};
-				const fedSnakesHash = {};
-
-				Object.entries(this.tracks[tick.TYPE]).forEach(([snakeId, snake]) => {
-					try {
-						snake.move(); // At this point in time the grid data will be inconsistent.
-						const headAndHash = snake.getHeadAndHash();
-						movedSnakesHash[snakeId] = headAndHash;
-
-						// Just note down wheather a snake has consume a food in this tick.
-						const { head } = headAndHash;
-						if (this.isFoodCell(head.x, head.y)) {
-							const food = this.removeFoodFromGrid(head.x, head.y);
-							fedSnakesHash[snakeId] = { snake, food };
-						}
-					} catch (err) {
-						if (err === SNAKE_COLLIDED_WITH_WALL || err === SNAKE_SUCIDE) {
-							snake.die(err);
-						} else {
-							// We encounted some other problem, so throw upward towards
-							// the error bounddary.
-							throw err;
-						}
-						// A snake object is aware of,
-						// 1) The map's boundaries.
-						// 2) Itself, it knows when it has bite itself.
-						// A snake object is not aware of other snakes.
-						// Imagine each snake having it's own grid and
-						// moving in its own grid without the knowledge about
-						// food and other snakes. The `grid` (this) object is
-						// what let's individual snakes communicate
-						// with other snakes and food.
-						// This behavior is intentional, to make the gameplay fair / correct
-						// we have to perform parallel computation not serial computation.
-						// That is we have to make each snake move 1 step forward and
-						// check if the move is valid or not, or what happened in that particular move.
-						// For that reason, advanced computation such as,
-						// 1) Intake of food.
-						// 2) Snake collision with other snake.
-						// 3) Head to head snake collision.
-						// are done below.
-					}
-				});
-
-				const idleSnakesHash = Object.entries(this.snakes).reduce((hash, [snakeId, snake]) => {
-					if (!(snakeId in movedSnakesHash)) {
-						hash[snakeId] = snake.getHeadAndHash();
-					}
-					return hash;
-				}, {});
-
-				const idleSnakes = Object.entries(idleSnakesHash);
-				const movedSnakes = Object.entries(movedSnakesHash);
-
-				const snakesToRemove = {};
-
-				// Handle
-				// 1) Two snake colliding head to head.
-				// 2) A snake colliding into another snake.
-				for (let i = 0; i < movedSnakes.length; i++) {
-					const [snakeOneId, { headKey: snakeOneHeadKey, hash: snakeOneHash }] = movedSnakes[i];
-					for (let j = i + 1; j < movedSnakes.length; j++) {
-						const [snakeTwoId, { headKey: snakeTwoHeadKey, hash: snakeTwoHash }] = movedSnakes[j];
-						if (snakeOneHeadKey === snakeTwoHeadKey) {
-							snakesToRemove[snakeOneId] = {
-								snake: this.snakes[snakeOneId],
-								causeOfDeath: SNAKE_HEAD_COLLISION,
-							};
-							snakesToRemove[snakeTwoId] = {
-								snake: this.snakes[snakeTwoId],
-								causeOfDeath: SNAKE_HEAD_COLLISION,
-							};
-						} else if (snakeOneHeadKey in snakeTwoHash) {
-							snakesToRemove[snakeOneId] = {
-								snake: this.snakes[snakeOneId],
-								causeOfDeath: SNAKE_BODY_COLLISION,
-							};
-						} else if (snakeTwoHeadKey in snakeOneHash) {
-							snakesToRemove[snakeTwoId] = {
-								snake: this.snakes[snakeTwoId],
-								causeOfDeath: SNAKE_BODY_COLLISION,
-							};
-						}
-					}
-
-					// Handle collision of a snake that has moved
-					// in this particular tick with a snake that
-					// doesn't operate in this tick.
-
-					for (let k = 0; k < idleSnakes.length; k++) {
-						const [snakeTwoId, { headKey: snakeTwoHeadKey, hash: snakeTwoHash }] = idleSnakes[k];
-						if (snakeOneHeadKey === snakeTwoHeadKey) {
-							snakesToRemove[snakeOneId] = {
-								snake: this.snakes[snakeOneId],
-								causeOfDeath: SNAKE_HEAD_COLLISION,
-							};
-							snakesToRemove[snakeTwoId] = {
-								snake: this.snakes[snakeTwoId],
-								causeOfDeath: SNAKE_HEAD_COLLISION,
-							};
-						} else if (snakeOneHeadKey in snakeTwoHash) {
-							snakesToRemove[snakeOneId] = {
-								snake: this.snakes[snakeOneId],
-								causeOfDeath: SNAKE_BODY_COLLISION,
-							};
-						}
-						// No need to to check snakeTwo's head colliding on snakeOne's body
-						// since snakeTwo is idle in this tick.
-					}
-				}
-
-				Object.values(snakesToRemove).forEach(({ snake, causeOfDeath }) => {
-					snake.die(causeOfDeath);
-				});
-
-				// To handle consumption of food.
-
-				Object.values(fedSnakesHash).forEach(({ snake, food }) => {
-					snake.consume(food);
-				});
-
-				// Grid data becomes consistent here, so update the UI.
-				this.updateState();
+				this.moveSnakes(Object.keys(this.tracks[tick.TYPE]));
 			}, duration);
 			this.timers.push(timer);
 		}
@@ -353,6 +359,15 @@ class Grid {
 			this.updateCells(this.getAllCells());
 		} else {
 			console.warn('Grid instance was not supplied a method to update the UI...');
+		}
+
+		if (this.updateSnakeList) {
+			this.updateSnakeList(
+				Object.entries(this.snakes).reduce((snakes, [snakeId, snake]) => {
+					snakes[snakeId] = snake.direction;
+					return snakes;
+				}, {}),
+			);
 		}
 	}
 

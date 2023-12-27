@@ -10,8 +10,6 @@ const GAME_STATES = {
 	RESUMED: 'resumed',
 };
 
-export const allSnakesSelectOption = { id: 'All' };
-
 if (GRID_HEIGHT % CELL_DIMENSION !== 0) {
 	throw new Error('GRID_HEIGHT is not divislbe by CELL_DIMENSION');
 }
