@@ -1,10 +1,12 @@
-# Classic Slither.io (Work in progress)
+# Classic Slither.io
 
 Experience Slither.io gameplay on a Nokia 6110-style snake game, powered by WebRTC.
 
+![Gameplay](demo/gameplay.gif)
+
 [Click here](https://shibisuriya.github.io/classic-slither.io/) to play against AI opponents.
 
-[Click here](https://shibisuriya.github.io/classic-slither.io/) to engage in multiplayer gameplay with your friend(s). Utilizing WebRTC, your browser establishes direct communication with your friend's browser, eliminating the need for a centralized server.
+[Click here](https://shibisuriya.github.io/classic-slither.io/) to engage in multiplayer gameplay with your friend(s). Utilizing WebRTC, your browser establishes direct communication with your friend's browser, eliminating the need for a centralized server(Work in progress).
 
 ## Game mechanics:
 
