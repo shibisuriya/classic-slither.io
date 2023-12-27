@@ -76,21 +76,25 @@ class Grid {
 			(event) => {
 				const key = event.key.toLowerCase();
 				if (['w', 'arrowup'].includes(key)) {
-					Object.values(this.snakes).forEach((snake) => {
-						snake.changeDirection(DIRECTIONS.UP);
-					});
+					this.snakes[4].changeDirection(DIRECTIONS.UP);
+					// Object.values(this.snakes).forEach((snake) => {
+					// 	snake.changeDirection(DIRECTIONS.UP);
+					// });
 				} else if (['s', 'arrowdown'].includes(key)) {
-					Object.values(this.snakes).forEach((snake) => {
-						snake.changeDirection(DIRECTIONS.DOWN);
-					});
+					this.snakes[4].changeDirection(DIRECTIONS.DOWN);
+					// Object.values(this.snakes).forEach((snake) => {
+					// 	snake.changeDirection(DIRECTIONS.DOWN);
+					// });
 				} else if (['a', 'arrowleft'].includes(key)) {
-					Object.values(this.snakes).forEach((snake) => {
-						snake.changeDirection(DIRECTIONS.LEFT);
-					});
+					this.snakes[4].changeDirection(DIRECTIONS.LEFT);
+					// Object.values(this.snakes).forEach((snake) => {
+					// 	snake.changeDirection(DIRECTIONS.LEFT);
+					// });
 				} else if (['d', 'arrowright'].includes(key)) {
-					Object.values(this.snakes).forEach((snake) => {
-						snake.changeDirection(DIRECTIONS.RIGHT);
-					});
+					this.snakes[4].changeDirection(DIRECTIONS.RIGHT);
+					// Object.values(this.snakes).forEach((snake) => {
+					// 	snake.changeDirection(DIRECTIONS.RIGHT);
+					// });
 				}
 			},
 			{ signal: this.keyboardAbortController.signal },

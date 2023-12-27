@@ -11,6 +11,8 @@ class Snake {
 		this.bodyColor = snake.bodyColor;
 		this.headColor = snake.headColor;
 		this.defaultTick = snake.defaultTick;
+		this.isBot = snake.isBot;
+		this.botType = snake.botType;
 		this.keys = snake.cells.reduce((keys, cell) => {
 			const { x, y } = cell;
 			keys.push(generateKey(x, y));
@@ -150,10 +152,25 @@ class Snake {
 	}
 
 	changeDirection(direction) {
+		// Since the game is designed in a way that the player can change the direction
+		// n number of times before the next tick and the last changed direction will be the direction
+		// in which the snake will move, the player can trick the snake into colliding with his own neck...
+
+		const head = this.getHead();
+		const neck = this.getNeck();
+
 		if (direction === this.direction) {
 			console.warn(`Snake is already moving in the ${direction} direction.`);
 		} else if (getOppositeDirection(this.direction) === direction) {
 			console.warn(`The snake can't make a 180 degree turn.`);
+		} else if (direction === DIRECTIONS.LEFT && head.x - 1 === neck.x) {
+			console.warn(`You are trying to put the neck into a state where it will collide with its own head...`);
+		} else if (direction === DIRECTIONS.RIGHT && head.x + 1 === neck.x) {
+			console.warn(`You are trying to put the neck into a state where it will collide with its own head...`);
+		} else if (direction === DIRECTIONS.DOWN && head.y + 1 === neck.y) {
+			console.warn(`You are trying to put the neck into a state where it will collide with its own head...`);
+		} else if (direction === DIRECTIONS.UP && head.y - 1 === neck.y) {
+			console.warn(`You are trying to put the neck into a state where it will collide with its own head...`);
 		} else {
 			this.direction = direction;
 		}
@@ -180,6 +197,13 @@ class Snake {
 	}
 
 	move() {
+		if (this.isBot) {
+			// The snake has been asked to move to the next cell...
+			// If this particular snake is a bot, implement the code for the bot logic here...
+			// The 'bot' can only do 1 out of 3 things move 'left', 'right' or 'forward', simple.
+			this.changeDirection.bind(this);
+		}
+
 		switch (this.direction) {
 			case DIRECTIONS.DOWN:
 				this.moveDown();
@@ -255,6 +279,12 @@ class Snake {
 			headKey,
 			hash: this.hash,
 		};
+	}
+
+	getNeck() {
+		const [_, neckKey] = this.keys;
+		const neck = this.hash[neckKey];
+		return neck;
 	}
 
 	getHead() {
