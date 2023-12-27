@@ -3,10 +3,12 @@ import styles from './grid.module.css';
 import { CELL_DIMENSION, GRID_HEIGHT, GRID_WIDTH, FOOD_TYPES } from './constants';
 import animation from './animations.module.css';
 
-function Grid({ view, annotations, showCellId }) {
+function Grid({ view, annotations, showCellId, isGameOver }) {
 	return (
 		<div className={styles.grid} style={{ width: `${GRID_WIDTH}px`, height: `${GRID_HEIGHT}px` }}>
 			{/* // I have separate <div />(s) for annotations and game, because these can overlap with each other. */}
+
+			{isGameOver && <div className={styles['game-over-banner']}>Game Over</div>}
 
 			{view.map((cell) => {
 				const { x, y, color, animationClass } = cell;

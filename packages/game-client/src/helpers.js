@@ -5,6 +5,31 @@ const isCellValid = (i, j) => {
 	return i < NUMBER_OF_ROWS && j < NUMBER_OF_COLUMNS && i >= 0 && j >= 0;
 };
 
+const findDirectionUsingNeckAndHead = (head, neck) => {
+	// This function lets us find out the direction of a snake if we don't know the direction of
+	// of the snake using the position of its neck and head.
+	if (isCellValid(head.x, head.y) && isCellValid(neck.x, neck.y)) {
+		const x = neck.x - head.x;
+		const y = neck.y - head.y;
+
+		if (x === 1 && y === 0) {
+			return DIRECTIONS.RIGHT;
+		} else if (x === -1 && y === 0) {
+			return DIRECTIONS.LEFT;
+		} else if (y === 1 && x === 0) {
+			return DIRECTIONS.DOWN;
+		} else if (y === -1 && x === 0) {
+			return DIRECTIONS.UP;
+		} else {
+			throw new Error(
+				`The neck and head coordinates supplied is not even the coordinates of neck and head! head - ${head}, neck - ${neck}.`,
+			);
+		}
+	} else {
+		throw new Error(`Invalid neck or head supplied, head - ${head}, neck - ${neck}.`);
+	}
+};
+
 const generateKey = (i, j, skipValidation = false) => {
 	if (!skipValidation) {
 		if (!isCellValid(i, j)) {
@@ -56,4 +81,11 @@ const whichFoodToSpawn = () => {
 	return FOOD_TYPES.FROG;
 };
 
-export { getOppositeDirection, generateValue, generateKey, isCellValid, whichFoodToSpawn };
+export {
+	findDirectionUsingNeckAndHead,
+	getOppositeDirection,
+	generateValue,
+	generateKey,
+	isCellValid,
+	whichFoodToSpawn,
+};
