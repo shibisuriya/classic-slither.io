@@ -37,60 +37,64 @@ function App() {
 
 	return (
 		<Fragment>
-			{Object.keys(aliveSnakes).map((snakeId) => {
-				return (
-					<div key={snakeId}>
-						<Checkbox
-							checked={selectedSnakes[snakeId]}
-							onChange={(e) => {
-								const isChecked = e.target.checked;
-								setSelectedSnakes((prev) => {
-									return {
-										...prev,
-										[snakeId]: isChecked,
-									};
-								});
-							}}
-						>
-							{snakeId}
-						</Checkbox>
-					</div>
-				);
-			})}
-			<Space>
-				Game running? <Switch checked={gameState} onChange={changeGameState} />;
-				<Checkbox
-					checked={showCellId}
-					onChange={(e) => {
-						const val = Boolean(e.target.checked);
-						localStorage.setItem('showCellId', val);
-						setShowCellId(val);
-					}}
-				>
-					Show cell ID?
-				</Checkbox>
-			</Space>
-			<Flex>
+			{/* <div style={{ height: '180px' }}>
+				{Object.keys(aliveSnakes).map((snakeId) => {
+					return (
+						<div key={snakeId}>
+							<Checkbox
+								checked={selectedSnakes[snakeId]}
+								onChange={(e) => {
+									const isChecked = e.target.checked;
+									setSelectedSnakes((prev) => {
+										return {
+											...prev,
+											[snakeId]: isChecked,
+										};
+									});
+								}}
+							>
+								{snakeId}
+							</Checkbox>
+						</div>
+					);
+				})}
 				<Space>
-					<Button
-						type="primary"
-						onClick={() => {
-							const snakesToMove = Object.entries(selectedSnakes).reduce((snakes, [key, value]) => {
-								if (value) {
-									// value would be true or false (boolean).
-									snakes.push(key);
-								}
-								return snakes;
-							}, []);
-							gameRef.current.nextMove(snakesToMove);
+					Game running? <Switch checked={gameState} onChange={changeGameState} />;
+					<Checkbox
+						checked={showCellId}
+						onChange={(e) => {
+							const val = Boolean(e.target.checked);
+							localStorage.setItem('showCellId', val);
+							setShowCellId(val);
 						}}
 					>
-						Next move
-					</Button>
+						Show cell ID?
+					</Checkbox>
 				</Space>
-			</Flex>
-			<Divider dashed />
-			<Game ref={gameRef} showCellId={showCellId} gameState={gameState} updateSnakeList={setAliveSnakes} />
+				<Flex>
+					<Space>
+						<Button
+							type="primary"
+							onClick={() => {
+								const snakesToMove = Object.entries(selectedSnakes).reduce((snakes, [key, value]) => {
+									if (value) {
+										// value would be true or false (boolean).
+										snakes.push(key);
+									}
+									return snakes;
+								}, []);
+								gameRef.current.nextMove(snakesToMove);
+							}}
+						>
+							Next move
+						</Button>
+					</Space>
+				</Flex>
+				<Divider dashed />
+			</div> */}
+			<div style={{ display: 'flex', justifyContent: 'center', height: '100vh', alignItems: 'center' }}>
+				<Game ref={gameRef} showCellId={showCellId} gameState={gameState} updateSnakeList={setAliveSnakes} />
+			</div>
 		</Fragment>
 	);
 }
