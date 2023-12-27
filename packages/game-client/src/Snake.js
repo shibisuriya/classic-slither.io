@@ -35,6 +35,7 @@ class Snake {
 	loadBot(botName) {
 		this.isBot = true;
 		this.botName = botName;
+		this.annotations = [];
 		this.bot = BOTS[botName].bot;
 	}
 
@@ -205,13 +206,33 @@ class Snake {
 		delete this.hash[tailKey];
 	}
 
+	getAnnotations() {
+		if (this.isBot) {
+			return this.annotations;
+		} else {
+			throw new Error("This snake is not a bot, can't get any annotations data...");
+		}
+	}
+
+	updateAnnotations(annotations) {
+		if (this.isBot) {
+			this.annotations = annotations;
+		} else {
+			throw new Error('Trying to add annotations for a player that is not a bot?');
+		}
+	}
+
 	move() {
 		if (this.isBot) {
 			// The snake has been asked to move to the next cell...
 			// If this particular snake is a bot, implement the code for the bot logic here...
 			// The 'bot' can only do 1 out of 3 things move 'left', 'right' or 'forward', simple.
 
-			this.bot(this.changeDirection.bind(this));
+			this.bot({
+				move: this.changeDirection.bind(this),
+				updateAnnotations: this.updateAnnotations.bind(this),
+				gameData: this.game.getGameData(),
+			});
 		}
 
 		switch (this.direction) {
@@ -301,6 +322,15 @@ class Snake {
 		const [headKey] = this.keys;
 		const head = this.hash[headKey];
 		return head;
+	}
+
+	getBody() {
+		const body = [];
+		for (let i = 1; i < this.keys.length; i++) {
+			const key = this.keys[i];
+			body.push(this.hash[key]);
+		}
+		return body;
 	}
 }
 

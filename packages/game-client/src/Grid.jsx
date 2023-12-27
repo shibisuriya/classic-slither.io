@@ -7,7 +7,8 @@ function Grid({ view, annotations, showCellId }) {
 	return (
 		<div className={styles.grid} style={{ width: `${GRID_WIDTH}px`, height: `${GRID_HEIGHT}px` }}>
 			{/* // I have separate <div />(s) for annotations and game, because these can overlap with each other. */}
-			{annotations.map((cell) => {
+
+			{view.map((cell) => {
 				const { x, y, color, animationClass } = cell;
 				return (
 					<div
@@ -18,14 +19,15 @@ function Grid({ view, annotations, showCellId }) {
 							top: `${y * CELL_DIMENSION}px`,
 							height: `${CELL_DIMENSION}px`,
 							width: `${CELL_DIMENSION}px`,
-							backgroundColor: 'hsl(0, 100%, 80%)',
+							backgroundColor: color,
 						}}
 					>
 						{showCellId && `${x}-${y}`}
 					</div>
 				);
 			})}
-			{view.map((cell) => {
+
+			{annotations.map((cell) => {
 				const { x, y, color, animationClass } = cell;
 				return (
 					<div

@@ -30,6 +30,9 @@ const initialSnakesState = {
 	// 	isBot: true,
 	// 	direction: DIRECTIONS.DOWN,
 	// 	defaultTick: SNAKE_TICKS.ONE.TYPE,
+
+	// 	isBot: true,
+	// 	botName: BOTS.HEAD_HUNTER.key,
 	// },
 	2: {
 		headColor: 'blue',
@@ -62,6 +65,9 @@ const initialSnakesState = {
 	// 	],
 	// 	direction: DIRECTIONS.DOWN,
 	// 	defaultTick: SNAKE_TICKS.HALF.TYPE,
+
+	// 	isBot: true,
+	// 	botName: BOTS.HEAD_HUNTER.key,
 	// },
 	4: {
 		headColor: 'red',

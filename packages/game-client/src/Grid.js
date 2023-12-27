@@ -136,6 +136,7 @@ class Grid {
 
 	initializeSnakes() {
 		this.snakes = {};
+		this.bots = {}; // Keep a separate hashMap of snakes which are bots.
 		for (const [snakeId, initialSnakeState] of Object.entries(initialSnakesState)) {
 			const snake = new Snake(initialSnakeState);
 			snake.die = (causeOfDeath) => {
@@ -189,6 +190,7 @@ class Grid {
 				// Every snake that is a bot should have access to the game's data like opponent's position,
 				// food's coordinates, etc.
 				snake.game = { getGameData: this.getGameData.bind(this) };
+				this.bots[snakeId] = snake;
 			}
 
 			this.snakes[snakeId] = snake;
@@ -208,6 +210,10 @@ class Grid {
 
 		this.removeSnakeFromTrack({ snakeId });
 		delete this.snakes[snakeId];
+
+		if (snakeId in this.bots) {
+			delete this.bots[snakeId];
+		}
 
 		return cloneDeep(removedSnake);
 	}
@@ -364,8 +370,8 @@ class Grid {
 
 	getGameData() {
 		return {
-			snakes: {},
-			food: {},
+			snakes: this.snakes,
+			food: this.food,
 		};
 	}
 
@@ -374,6 +380,10 @@ class Grid {
 			this.viewUpdater(this.getViewData());
 		} else {
 			console.warn('Grid instance was not supplied a method to update the view...');
+		}
+
+		if (Object.values(this.bots).length > 0) {
+			this.updateAnnotations();
 		}
 
 		if (this.updateSnakeList) {
@@ -467,12 +477,20 @@ class Grid {
 
 	updateAnnotations() {
 		if (this.annotationsUpdater) {
-			this.annotationsUpdater([]);
+			this.annotationsUpdater(this.getAnnotationData());
 		}
 	}
 
 	getAnnotationData() {
-		return [];
+		const annotationData = Object.values(this.bots).reduce((annotationData, bot) => {
+			const bodyColor = bot.bodyColor;
+			// TODO: reduce alpha of the color...
+			for (const cell of bot.getAnnotations()) {
+				annotationData.push({ color: bodyColor, ...cell });
+			}
+			return annotationData;
+		}, []);
+		return annotationData;
 	}
 
 	onDestroy() {
