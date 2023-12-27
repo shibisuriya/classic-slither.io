@@ -77,22 +77,22 @@ class Grid {
 			(event) => {
 				const key = event.key.toLowerCase();
 				if (['w', 'arrowup'].includes(key)) {
-					this.snakes[4].changeDirection(DIRECTIONS.UP);
+					this.snakes['player'].changeDirection(DIRECTIONS.UP);
 					// Object.values(this.snakes).forEach((snake) => {
 					// 	snake.changeDirection(DIRECTIONS.UP);
 					// });
 				} else if (['s', 'arrowdown'].includes(key)) {
-					this.snakes[4].changeDirection(DIRECTIONS.DOWN);
+					this.snakes['player'].changeDirection(DIRECTIONS.DOWN);
 					// Object.values(this.snakes).forEach((snake) => {
 					// 	snake.changeDirection(DIRECTIONS.DOWN);
 					// });
 				} else if (['a', 'arrowleft'].includes(key)) {
-					this.snakes[4].changeDirection(DIRECTIONS.LEFT);
+					this.snakes['player'].changeDirection(DIRECTIONS.LEFT);
 					// Object.values(this.snakes).forEach((snake) => {
 					// 	snake.changeDirection(DIRECTIONS.LEFT);
 					// });
 				} else if (['d', 'arrowright'].includes(key)) {
-					this.snakes[4].changeDirection(DIRECTIONS.RIGHT);
+					this.snakes['player'].changeDirection(DIRECTIONS.RIGHT);
 					// Object.values(this.snakes).forEach((snake) => {
 					// 	snake.changeDirection(DIRECTIONS.RIGHT);
 					// });
@@ -138,7 +138,7 @@ class Grid {
 		this.snakes = {};
 		this.bots = {}; // Keep a separate hashMap of snakes which are bots.
 		for (const [snakeId, initialSnakeState] of Object.entries(initialSnakesState)) {
-			const snake = new Snake(initialSnakeState);
+			const snake = new Snake(snakeId, initialSnakeState);
 			snake.die = (causeOfDeath) => {
 				// When a snake dies his body is converted to food named fillets.
 				const removedSnake = this.removeSnakeFromGrid(snakeId);
@@ -342,12 +342,8 @@ class Grid {
 			snake.consume(food);
 		});
 
-		// End the game if there is only 1 or 0 player in the map,
-		// since the last person existing in the map wins the game.
-		// This has side effects, i.e., you won't be able to play
-		// by yourselves alone in the map for testing purposes as well...
-		// In that case commnet out this piece of code.
-		if (Object.values(this.snakes).length <= 1) {
+		// If the player is dead the game is over, in bots mode...
+		if (!('player' in this.snakes)) {
 			this.endGame();
 		}
 	}

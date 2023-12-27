@@ -81,6 +81,16 @@ const whichFoodToSpawn = () => {
 	return FOOD_TYPES.FROG;
 };
 
+const excludeSelf = ({ myId, snakes }) => {
+	// This heloers lets us remove ourselves from the game data so that it is convenient to perform operaations on the data...
+	return Object.entries(snakes).reduce((snakes, [snakeId, snake]) => {
+		if (snakeId !== myId) {
+			snakes[snakeId] = snake;
+		}
+		return snakes;
+	}, {});
+};
+
 export {
 	findDirectionUsingNeckAndHead,
 	getOppositeDirection,
@@ -88,4 +98,5 @@ export {
 	generateKey,
 	isCellValid,
 	whichFoodToSpawn,
+	excludeSelf,
 };

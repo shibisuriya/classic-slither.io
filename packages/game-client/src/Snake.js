@@ -6,9 +6,10 @@ import cloneDeep from 'lodash/cloneDeep';
 import { BOTS } from './bots';
 
 class Snake {
-	constructor(snake) {
+	constructor(snakeId, snake) {
 		// Organise the cells data into a hashMap so that it is easier to
 		// perform computation on this data.
+		this.snakeId = snakeId;
 		this.bodyColor = snake.bodyColor;
 		this.headColor = snake.headColor;
 		this.defaultTick = snake.defaultTick;
@@ -232,6 +233,7 @@ class Snake {
 				move: this.changeDirection.bind(this),
 				updateAnnotations: this.updateAnnotations.bind(this),
 				gameData: this.game.getGameData(),
+				self: this,
 			});
 		}
 
@@ -331,6 +333,13 @@ class Snake {
 			body.push(this.hash[key]);
 		}
 		return body;
+	}
+
+	getCells() {
+		return this.keys.reduce((cells, key) => {
+			cells.push(this.hash[key]);
+			return cells;
+		}, []);
 	}
 }
 

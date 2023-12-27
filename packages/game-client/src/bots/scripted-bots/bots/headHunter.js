@@ -1,26 +1,31 @@
 import { astar } from '../algorithms/astar';
-import { findDirectionUsingNeckAndHead } from '../../../helpers';
+import { findDirectionUsingNeckAndHead, excludeSelf } from '../../../helpers';
 
-const headHunter = ({ move, updateAnnotations, gameData }) => {
-	// const start = { x: 1, y: 1 };
-	// const end = { x: 10, y: 10 };
-	// const obstacles = [
-	// 	{ x: 3, y: 2 },
-	// 	{ x: 3, y: 3 },
-	// 	{ x: 3, y: 4 },
-	// ];
-	const two = gameData.snakes[2]; //  bot
-	const botHead = two.getHead();
-	const four = gameData.snakes[4];
-	const targetHead = four.getHead();
-	const annotations = astar(botHead, targetHead, two.getBody().concat(four.getBody()));
+const headHunter = ({ move, updateAnnotations, gameData, self }) => {
+	// This bot is sucidal, it tries chases down the player and tries to have a head to head collison and
+	// killing the player...
+	// Not that the variable `gameData` will contain data of all the snakes including the current snake (self)...
+
+	const opponents = excludeSelf({ myId: self.snakeId, snakes: gameData.snakes });
+	const player = opponents['player']; // The user who plays the game will have the snakeId 'player'...
+
+	const getObstacles = () => {
+		const cells = self.getBody().concat(player.getBody());
+		for (const [snakeId, snake] of Object.entries(opponents)) {
+			if (snakeId !== self.snakeId && snakeId !== 'player') {
+				cells.push(...snake.getCells());
+			}
+		}
+		return cells;
+	};
+
+	// The object of the bots is to kill the player...
+	const path = astar(self.getHead(), player.getHead(), getObstacles());
 	// updateAnnotations(annotations);
 
-	const [_, cellToMoveTo] = annotations;
-	const moveDir = findDirectionUsingNeckAndHead(two.getHead(), cellToMoveTo);
+	const [_, cellToMoveTo] = path;
+	const moveDir = findDirectionUsingNeckAndHead(self.getHead(), cellToMoveTo);
 	move(moveDir);
-	console.log('Cell to move to -> ', cellToMoveTo, '  Bot head -> ', two.getHead());
-	console.log('Shibi headhunterbot', Date.now(), '  ', gameData);
 };
 
 export { headHunter };
