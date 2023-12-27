@@ -3,6 +3,7 @@ import { generateKey, getOppositeDirection, isCellValid } from './helpers';
 import { DIRECTIONS, FOOD_EFFECTS, FOOD_TYPES } from './constants';
 import { SNAKE_COLLIDED_WITH_WALL, SNAKE_SUCIDE } from './errors';
 import cloneDeep from 'lodash/cloneDeep';
+import { BOTS } from './bots';
 
 class Snake {
 	constructor(snake) {
@@ -25,6 +26,17 @@ class Snake {
 
 		this.direction = snake.direction;
 		this.buffs = {};
+
+		if (snake.isBot) {
+			this.loadBot(snake.botName);
+		}
+	}
+
+	loadBot(botName) {
+		this.isBot = true;
+		this.botName = botName;
+		this.annotations = [];
+		this.bot = BOTS[botName].bot;
 	}
 
 	addBuff(type, buff) {
@@ -150,10 +162,25 @@ class Snake {
 	}
 
 	changeDirection(direction) {
+		// Since the game is designed in a way that the player can change the direction
+		// n number of times before the next tick and the last changed direction will be the direction
+		// in which the snake will move, the player can trick the snake into colliding with his own neck...
+
+		const head = this.getHead();
+		const neck = this.getNeck();
+
 		if (direction === this.direction) {
 			console.warn(`Snake is already moving in the ${direction} direction.`);
 		} else if (getOppositeDirection(this.direction) === direction) {
 			console.warn(`The snake can't make a 180 degree turn.`);
+		} else if (direction === DIRECTIONS.LEFT && head.x - 1 === neck.x) {
+			console.warn(`You are trying to put the neck into a state where it will collide with its own head...`);
+		} else if (direction === DIRECTIONS.RIGHT && head.x + 1 === neck.x) {
+			console.warn(`You are trying to put the neck into a state where it will collide with its own head...`);
+		} else if (direction === DIRECTIONS.DOWN && head.y + 1 === neck.y) {
+			console.warn(`You are trying to put the neck into a state where it will collide with its own head...`);
+		} else if (direction === DIRECTIONS.UP && head.y - 1 === neck.y) {
+			console.warn(`You are trying to put the neck into a state where it will collide with its own head...`);
 		} else {
 			this.direction = direction;
 		}
@@ -179,7 +206,35 @@ class Snake {
 		delete this.hash[tailKey];
 	}
 
+	getAnnotations() {
+		if (this.isBot) {
+			return this.annotations;
+		} else {
+			throw new Error("This snake is not a bot, can't get any annotations data...");
+		}
+	}
+
+	updateAnnotations(annotations) {
+		if (this.isBot) {
+			this.annotations = annotations;
+		} else {
+			throw new Error('Trying to add annotations for a player that is not a bot?');
+		}
+	}
+
 	move() {
+		if (this.isBot) {
+			// The snake has been asked to move to the next cell...
+			// If this particular snake is a bot, implement the code for the bot logic here...
+			// The 'bot' can only do 1 out of 3 things move 'left', 'right' or 'forward', simple.
+
+			this.bot({
+				move: this.changeDirection.bind(this),
+				updateAnnotations: this.updateAnnotations.bind(this),
+				gameData: this.game.getGameData(),
+			});
+		}
+
 		switch (this.direction) {
 			case DIRECTIONS.DOWN:
 				this.moveDown();
@@ -257,10 +312,25 @@ class Snake {
 		};
 	}
 
+	getNeck() {
+		const [_, neckKey] = this.keys;
+		const neck = this.hash[neckKey];
+		return neck;
+	}
+
 	getHead() {
 		const [headKey] = this.keys;
 		const head = this.hash[headKey];
 		return head;
+	}
+
+	getBody() {
+		const body = [];
+		for (let i = 1; i < this.keys.length; i++) {
+			const key = this.keys[i];
+			body.push(this.hash[key]);
+		}
+		return body;
 	}
 }
 

@@ -44,8 +44,8 @@ class Grid {
 		}
 	}
 
-	getAllCells() {
-		return Object.values(this.snakes)
+	getViewData() {
+		const viewData = Object.values(this.snakes)
 			.reduce((cells, snake) => {
 				snake.keys.forEach((key, index) => {
 					const cell = snake.hash[key];
@@ -66,6 +66,7 @@ class Grid {
 					return cells;
 				}, []),
 			);
+		return viewData;
 	}
 
 	attachKeyboard() {
@@ -76,21 +77,25 @@ class Grid {
 			(event) => {
 				const key = event.key.toLowerCase();
 				if (['w', 'arrowup'].includes(key)) {
-					Object.values(this.snakes).forEach((snake) => {
-						snake.changeDirection(DIRECTIONS.UP);
-					});
+					this.snakes[4].changeDirection(DIRECTIONS.UP);
+					// Object.values(this.snakes).forEach((snake) => {
+					// 	snake.changeDirection(DIRECTIONS.UP);
+					// });
 				} else if (['s', 'arrowdown'].includes(key)) {
-					Object.values(this.snakes).forEach((snake) => {
-						snake.changeDirection(DIRECTIONS.DOWN);
-					});
+					this.snakes[4].changeDirection(DIRECTIONS.DOWN);
+					// Object.values(this.snakes).forEach((snake) => {
+					// 	snake.changeDirection(DIRECTIONS.DOWN);
+					// });
 				} else if (['a', 'arrowleft'].includes(key)) {
-					Object.values(this.snakes).forEach((snake) => {
-						snake.changeDirection(DIRECTIONS.LEFT);
-					});
+					this.snakes[4].changeDirection(DIRECTIONS.LEFT);
+					// Object.values(this.snakes).forEach((snake) => {
+					// 	snake.changeDirection(DIRECTIONS.LEFT);
+					// });
 				} else if (['d', 'arrowright'].includes(key)) {
-					Object.values(this.snakes).forEach((snake) => {
-						snake.changeDirection(DIRECTIONS.RIGHT);
-					});
+					this.snakes[4].changeDirection(DIRECTIONS.RIGHT);
+					// Object.values(this.snakes).forEach((snake) => {
+					// 	snake.changeDirection(DIRECTIONS.RIGHT);
+					// });
 				}
 			},
 			{ signal: this.keyboardAbortController.signal },
@@ -131,6 +136,7 @@ class Grid {
 
 	initializeSnakes() {
 		this.snakes = {};
+		this.bots = {}; // Keep a separate hashMap of snakes which are bots.
 		for (const [snakeId, initialSnakeState] of Object.entries(initialSnakesState)) {
 			const snake = new Snake(initialSnakeState);
 			snake.die = (causeOfDeath) => {
@@ -180,6 +186,13 @@ class Grid {
 				getCellsOccupiedBySnakes: this.getCellsOccupiedBySnakes.bind(this),
 			};
 
+			if (snake.isBot) {
+				// Every snake that is a bot should have access to the game's data like opponent's position,
+				// food's coordinates, etc.
+				snake.game = { getGameData: this.getGameData.bind(this) };
+				this.bots[snakeId] = snake;
+			}
+
 			this.snakes[snakeId] = snake;
 			const trackId = snake.defaultTick;
 			this.addSnakeToTrack(trackId, snakeId);
@@ -197,6 +210,10 @@ class Grid {
 
 		this.removeSnakeFromTrack({ snakeId });
 		delete this.snakes[snakeId];
+
+		if (snakeId in this.bots) {
+			delete this.bots[snakeId];
+		}
 
 		return cloneDeep(removedSnake);
 	}
@@ -324,9 +341,6 @@ class Grid {
 		Object.values(fedSnakesHash).forEach(({ snake, food }) => {
 			snake.consume(food);
 		});
-
-		// Grid data becomes consistent here, so update the UI.
-		this.updateState();
 	}
 
 	attachTickers() {
@@ -340,6 +354,7 @@ class Grid {
 			const { DURATION: duration } = tick;
 			const timer = setInterval(() => {
 				this.moveSnakes(Object.keys(this.tracks[tick.TYPE]));
+				this.updateView();
 			}, duration);
 			this.timers.push(timer);
 		}
@@ -347,18 +362,28 @@ class Grid {
 		for (const { DURATION: duration } of Object.values(FOOD_TICKS)) {
 			const timer = setInterval(() => {
 				this.spawnFood();
-				this.updateState();
+				this.updateView();
 			}, duration);
 			this.timers.push(timer);
 		}
 	}
 
-	updateState() {
-		// TODO: refactor this method.
-		if (this.updateCells) {
-			this.updateCells(this.getAllCells());
+	getGameData() {
+		return {
+			snakes: this.snakes,
+			food: this.food,
+		};
+	}
+
+	updateView() {
+		if (this.viewUpdater) {
+			this.viewUpdater(this.getViewData());
 		} else {
-			console.warn('Grid instance was not supplied a method to update the UI...');
+			console.warn('Grid instance was not supplied a method to update the view...');
+		}
+
+		if (Object.values(this.bots).length > 0) {
+			this.updateAnnotations();
 		}
 
 		if (this.updateSnakeList) {
@@ -403,16 +428,18 @@ class Grid {
 	getCellsOccupiedBySnakes() {
 		return Object.values(this.snakes).reduce((cells, snake) => {
 			// Make sure there is integrity in snake's data before invoking this
-			// method since it throws an error if two snakes occupy a single cell...
+			// method since it throws an error if two snakes occupy a single cell or food and snakes occupy the same cell...
 			const { hash } = snake;
-			// for (const [key, value] of Object.entries(hash)) {
-			// 	if (!(key in cells)) {
-			// 		Object.assign(cells, { [key]: value });
-			// 	} else {
-			// 		throw new Error('Two snakes are occupying a single cell!');
-			// 	}
-			// }
-			return Object.assign(cells, hash);
+			for (const [key, value] of Object.entries(hash)) {
+				if (!(key in cells) && !this.isFoodCell(value.x, value.y)) {
+					// hmmm, isFoodCell checks for isValidcell... So the edge case where
+					// we check wheather the snake has a valid cell or not is taken care of...
+					Object.assign(cells, { [key]: value });
+				} else {
+					throw new Error('Two snakes or food are occupying a single cell!');
+				}
+			}
+			return cells;
 		}, {});
 	}
 
@@ -446,6 +473,24 @@ class Grid {
 			clearInterval(timer);
 		});
 		this.timers = [];
+	}
+
+	updateAnnotations() {
+		if (this.annotationsUpdater) {
+			this.annotationsUpdater(this.getAnnotationData());
+		}
+	}
+
+	getAnnotationData() {
+		const annotationData = Object.values(this.bots).reduce((annotationData, bot) => {
+			const bodyColor = bot.bodyColor;
+			// TODO: reduce alpha of the color...
+			for (const cell of bot.getAnnotations()) {
+				annotationData.push({ color: bodyColor, ...cell });
+			}
+			return annotationData;
+		}, []);
+		return annotationData;
 	}
 
 	onDestroy() {

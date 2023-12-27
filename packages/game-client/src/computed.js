@@ -1,5 +1,6 @@
 import { NUMBER_OF_COLUMNS, NUMBER_OF_ROWS, DIRECTIONS, SNAKE_TICKS } from './constants';
 import { generateKey, generateValue, isCellValid } from './helpers';
+import { BOTS } from './bots';
 
 const generateGridMap = () => {
 	const hash = {};
@@ -14,21 +15,25 @@ const generateGridMap = () => {
 const GRID_MAP = generateGridMap();
 
 const initialSnakesState = {
-	1: {
-		headColor: 'red',
-		bodyColor: 'yellow',
-		cells: [
-			{ x: 0, y: 6 }, // Head
-			{ x: 0, y: 5 },
-			{ x: 0, y: 4 },
-			{ x: 0, y: 3 },
-			{ x: 0, y: 2 },
-			{ x: 0, y: 1 },
-			{ x: 0, y: 0 }, // Tail
-		],
-		direction: DIRECTIONS.DOWN,
-		defaultTick: SNAKE_TICKS.ONE.TYPE,
-	},
+	// 1: {
+	// 	headColor: 'red',
+	// 	bodyColor: 'yellow',
+	// 	cells: [
+	// 		{ x: 0, y: 6 }, // Head
+	// 		{ x: 0, y: 5 },
+	// 		{ x: 0, y: 4 },
+	// 		{ x: 0, y: 3 },
+	// 		{ x: 0, y: 2 },
+	// 		{ x: 0, y: 1 },
+	// 		{ x: 0, y: 0 }, // Tail
+	// 	],
+	// 	isBot: true,
+	// 	direction: DIRECTIONS.DOWN,
+	// 	defaultTick: SNAKE_TICKS.ONE.TYPE,
+
+	// 	isBot: true,
+	// 	botName: BOTS.HEAD_HUNTER.key,
+	// },
 	2: {
 		headColor: 'blue',
 		bodyColor: 'orange',
@@ -41,24 +46,29 @@ const initialSnakesState = {
 			{ x: 3, y: 1 },
 			{ x: 3, y: 0 }, // Tail
 		],
+		isBot: true,
+		botName: BOTS.HEAD_HUNTER.key,
 		direction: DIRECTIONS.DOWN,
 		defaultTick: SNAKE_TICKS.QUARTER.TYPE,
 	},
-	3: {
-		headColor: 'purple',
-		bodyColor: 'gold',
-		cells: [
-			{ x: 5, y: 6 }, // Head
-			{ x: 5, y: 5 },
-			{ x: 5, y: 4 },
-			{ x: 5, y: 3 },
-			{ x: 5, y: 2 },
-			{ x: 5, y: 1 },
-			{ x: 5, y: 0 }, // Tail
-		],
-		direction: DIRECTIONS.DOWN,
-		defaultTick: SNAKE_TICKS.HALF.TYPE,
-	},
+	// 3: {
+	// 	headColor: 'purple',
+	// 	bodyColor: 'gold',
+	// 	cells: [
+	// 		{ x: 5, y: 6 }, // Head
+	// 		{ x: 5, y: 5 },
+	// 		{ x: 5, y: 4 },
+	// 		{ x: 5, y: 3 },
+	// 		{ x: 5, y: 2 },
+	// 		{ x: 5, y: 1 },
+	// 		{ x: 5, y: 0 }, // Tail
+	// 	],
+	// 	direction: DIRECTIONS.DOWN,
+	// 	defaultTick: SNAKE_TICKS.HALF.TYPE,
+
+	// 	isBot: true,
+	// 	botName: BOTS.HEAD_HUNTER.key,
+	// },
 	4: {
 		headColor: 'red',
 		bodyColor: 'black',
@@ -72,7 +82,7 @@ const initialSnakesState = {
 			{ x: 7, y: 0 }, // Tail
 		],
 		direction: DIRECTIONS.DOWN,
-		defaultTick: SNAKE_TICKS.TWO_TENTH.TYPE,
+		defaultTick: SNAKE_TICKS.QUARTER.TYPE,
 	},
 };
 
