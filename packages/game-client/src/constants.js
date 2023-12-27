@@ -1,16 +1,14 @@
-import { findKeyByValue, areValuesUnique } from './utils';
+import { areValuesUnique } from './utils';
 
 // in px (pixels)
-const GRID_WIDTH = 30 * 30;
-const GRID_HEIGHT = 30 * 30;
+const GRID_WIDTH = 30 * 25;
+const GRID_HEIGHT = 30 * 25;
 const CELL_DIMENSION = 30;
 
 const GAME_STATES = {
 	PAUSED: 'paused',
 	RESUMED: 'resumed',
 };
-
-export const allSnakesSelectOption = { id: 'All' };
 
 if (GRID_HEIGHT % CELL_DIMENSION !== 0) {
 	throw new Error('GRID_HEIGHT is not divislbe by CELL_DIMENSION');
@@ -45,8 +43,8 @@ const SNAKE_TICKS = {
 
 const FOOD_TICKS = {
 	ONE_TENTH: {
-		TYPE: 'ONE_TENTH',
-		DURATION: 1000 * 0.1,
+		TYPE: 'HALF',
+		DURATION: 1000 * 0.5,
 	},
 };
 

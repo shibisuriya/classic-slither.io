@@ -1,7 +1,8 @@
 body {
 	overflow: hidden;
+	margin: 0px;
 }
 
-* {
+/* * {
 	outline: 1px dashed black !important;
-}
+} */
