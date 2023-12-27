@@ -2,7 +2,7 @@
 
 Experience Slither.io gameplay on a Nokia 6110-style snake game, powered by WebRTC.
 
-![Gameplay](demo/gameplay.gif)
+<img src="demo/gameplay.gif" alt="Alt Text" width="400">
 
 [Click here](https://shibisuriya.github.io/classic-slither.io/) to play against AI opponents.
 
