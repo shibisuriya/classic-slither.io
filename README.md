@@ -43,6 +43,35 @@ The snake gains speed of 1.5x if it consumes this food.
 
 When a snake dies in the map its body gets converted to food, other snakes alive in the map can consume this food. The snake's body grows by 4 cells if it consumes a fillet.
 
+## Bots
+
+The game supports two types of bots, scripted bots and AI based bots (AI bots are work in progress)... Scripted bots work based on rules described by the developer,
+creating a scripted bot is simple, just add a javascript file that exports a function to `packages/game-client/src/bots/scripted-bots/bots/`, this function gets invoked by the game on every tick for every snake that is using this particular bot, the function gets a callback function named `move` and additional data as arguments that lets the developer decide what the bot should do next, the developer of the bot should invoke the `move` function with a valid direction, the snake will move in the direction supplied in that particular tick.
+
+The function gets the following as arguments,
+
+-   move - A callback function which the developer should invoke after performing the computation and deciding in which direction the snake should move in that particular tick. The move function should be invoked by passing a valid direction as argument.
+
+-   gameData - An object that contains the coordinates of opponents and food in the map.
+
+-   self - A reference to bot itself...
+
+-   updateAnnotations - This callback function helps us to visualize the strategy (to where the bot is trying to move) of the bot by drawing annotations (paths) on the map. Just invoke this function with x, y coordinates of the path as argument.
+
+After adding the javascript file that exports a function which implements the bot, add an entry to `packages/game-client/src/bots/scripted-bots/index.js` file for the new bot.
+
+### Available bots:
+
+#### Scripted bots:
+
+##### Head hunter:
+
+This bot is sucidal, it tries to run after the player's head and tries to have a head to head collision, hence killing itself and the player... This bot works effectively when there are multiple bots in the map, if the player and the head hunter bot are dead the game ends and the bots that are alive in the map win.
+
+#### Smart head hunter (work in progress):
+
+A head hunter bot that tries to eat food available in the map whenever possible instead of blinding running behind the player's head.
+
 ## Implementation:
 
 ### The Render engine:
