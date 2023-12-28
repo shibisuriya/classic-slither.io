@@ -343,7 +343,7 @@ class Grid {
 		});
 
 		// If the player is dead the game is over, in bots mode...
-		if (!('player' in this.snakes)) {
+		if (!('player' in this.snakes || Object.keys(this.snakes).length <= 1)) {
 			this.endGame();
 		}
 	}
