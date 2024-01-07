@@ -31,7 +31,7 @@ At regular intervals, a random type of food will spawn in map regions unoccupied
 
 The snake's body grows by 1 cell if it consumes a frog.
 
-#### The Shrink berries:
+#### The Shrink berries (work in progress):
 
 Eating a shrink berry decreases the snake's body length by 1 cell. It's important to note that if the snake's body is only 2 cells long, this food has no impact on the snake.
 
@@ -68,7 +68,7 @@ After adding the javascript file that exports a function which implements the bo
 
 This bot is sucidal, it tries to run after the player's head and tries to have a head to head collision, hence killing itself and the player... This bot works effectively when there are multiple bots in the map, if the player and the head hunter bot are dead the game ends and the bots that are alive in the map win.
 
-#### Smart head hunter (work in progress):
+##### Smart head hunter (work in progress):
 
 A head hunter bot that tries to eat food available in the map whenever possible instead of blinding running behind the player's head.
 

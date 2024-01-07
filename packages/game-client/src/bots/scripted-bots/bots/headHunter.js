@@ -24,8 +24,11 @@ const headHunter = ({ move, updateAnnotations, gameData, self }) => {
 	// updateAnnotations(annotations);
 
 	const [_, cellToMoveTo] = path;
-	const moveDir = findDirectionUsingNeckAndHead(self.getHead(), cellToMoveTo);
-	move(moveDir);
+
+	if (path.length > 0) {
+		const direction = findDirectionUsingNeckAndHead(self.getHead(), cellToMoveTo);
+		move(direction);
+	}
 };
 
 export { headHunter };
