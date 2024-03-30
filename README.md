@@ -6,7 +6,7 @@ Experience Slither.io gameplay on a Nokia 6110-style snake game, powered by WebR
 
 [Click here](https://shibisuriya.github.io/classic-slither.io/) to play against AI opponents.
 
-[Click here](https://shibisuriya.github.io/classic-slither.io/) to engage in multiplayer gameplay with your friend(s). Utilizing WebRTC, your browser establishes direct communication with your friend's browser, eliminating the need for a centralized server(Work in progress).
+[Click here](https://shibisuriya.github.io/classic-slither.io/) to engage in multiplayer gameplay with your friend(s). Utilizing WebRTC, your browser establishes direct communication with your friend's browser, eliminating the need for a centralized server.
 
 ## Game mechanics:
 
@@ -31,7 +31,7 @@ At regular intervals, a random type of food will spawn in map regions unoccupied
 
 The snake's body grows by 1 cell if it consumes a frog.
 
-#### The Shrink berries (work in progress):
+#### The Shrink berries:
 
 Eating a shrink berry decreases the snake's body length by 1 cell. It's important to note that if the snake's body is only 2 cells long, this food has no impact on the snake.
 
@@ -45,7 +45,7 @@ When a snake dies in the map its body gets converted to food, other snakes alive
 
 ## Bots
 
-The game supports two types of bots, scripted bots and AI based bots (AI bots are work in progress)... Scripted bots work based on rules described by the developer,
+The game supports two types of bots, scripted bots and AI based bots... Scripted bots work based on rules described by the developer,
 creating a scripted bot is simple, just add a javascript file that exports a function to `packages/game-client/src/bots/scripted-bots/bots/`, this function gets invoked by the game on every tick for every snake that is using this particular bot, the function gets a callback function named `move` and additional data as arguments that lets the developer decide what the bot should do next, the developer of the bot should invoke the `move` function with a valid direction, the snake will move in the direction supplied in that particular tick.
 
 The function gets the following as arguments,
@@ -68,7 +68,7 @@ After adding the javascript file that exports a function which implements the bo
 
 This bot is sucidal, it tries to run after the player's head and tries to have a head to head collision, hence killing itself and the player... This bot works effectively when there are multiple bots in the map, if the player and the head hunter bot are dead the game ends and the bots that are alive in the map win.
 
-##### Smart head hunter (work in progress):
+##### Smart head hunter:
 
 A head hunter bot that tries to eat food available in the map whenever possible instead of blinding running behind the player's head.
 
